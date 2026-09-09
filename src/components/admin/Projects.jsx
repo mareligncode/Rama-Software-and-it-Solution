@@ -511,7 +511,9 @@ export default function Projects() {
       <div className="space-y-4">
         {filteredProjects.length === 0 ? (
           <div className="bg-white dark:bg-slate-800 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 p-12 text-center">
-            <FolderKanban className="mx-auto size-16 text-slate-400" />
+            <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 flex items-center justify-center">
+              <FolderKanban className="size-10 text-purple-500" />
+            </div>
             <p className="mt-4 font-semibold text-slate-900 dark:text-white">No projects found</p>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Create your first project to get started</p>
           </div>
@@ -519,23 +521,25 @@ export default function Projects() {
           filteredProjects.map((project) => {
             const projectTasks = getProjectTasks(project.id)
             const isExpanded = expandedProjects[project.id]
+            const completedTasks = projectTasks.filter(t => t.status === 'completed').length
+            const progress = projectTasks.length > 0 ? Math.round((completedTasks / projectTasks.length) * 100) : 0
 
             return (
-              <div key={project.id} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div key={project.id} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow">
                 {/* Project Header */}
-                <div className="p-6">
+                <div className="p-5">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
                       <button
                         onClick={() => toggleProjectExpand(project.id)}
-                        className="mt-1 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="mt-1 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                       >
                         {isExpanded ? <ChevronDown className="size-5 text-slate-500" /> : <ChevronRight className="size-5 text-slate-500" />}
                       </button>
                       
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{project.name}</h3>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white truncate">{project.name}</h3>
                           <Badge className={statusColors[project.status] || ""}>
                             {project.status}
                           </Badge>
@@ -544,32 +548,45 @@ export default function Projects() {
                           </Badge>
                         </div>
                         
-                        <div className="flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400">
-                          <span className="flex items-center gap-1.5">
-                            <span className="font-mono">{project.project_code}</span>
+                        <div className="flex flex-wrap gap-3 text-sm text-slate-500 dark:text-slate-400 mb-2">
+                          <span className="flex items-center gap-1.5 font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded">
+                            {project.project_code}
                           </span>
                           {project.client_name && (
                             <span className="flex items-center gap-1.5">
-                              <Building2 className="size-4" /> {project.client_name}
+                              <Building2 className="size-4 text-blue-500" /> {project.client_name}
                             </span>
                           )}
                           {project.start_date && (
                             <span className="flex items-center gap-1.5">
-                              <Calendar className="size-4" /> {new Date(project.start_date).toLocaleDateString()}
+                              <Calendar className="size-4 text-green-500" /> {new Date(project.start_date).toLocaleDateString()}
                             </span>
                           )}
                           {project.budget && (
                             <span className="flex items-center gap-1.5">
-                              <DollarSign className="size-4" /> {project.budget.toLocaleString()}
+                              <DollarSign className="size-4 text-emerald-500" /> {project.budget.toLocaleString()}
                             </span>
                           )}
-                          <span className="flex items-center gap-1.5">
-                            <CheckCircle2 className="size-4" /> {projectTasks.filter(t => t.status === 'completed').length}/{projectTasks.length} tasks
-                          </span>
                         </div>
 
+                        {/* Progress Bar */}
+                        {projectTasks.length > 0 && (
+                          <div className="mb-2">
+                            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+                              <span>Progress</span>
+                              <span>{progress}%</span>
+                            </div>
+                            <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
                         {project.description && (
-                          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{project.description}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">{project.description}</p>
                         )}
                       </div>
                     </div>
@@ -578,10 +595,10 @@ export default function Projects() {
                       <Button size="sm" variant="outline" onClick={() => {
                         setTaskForm({ ...taskForm, project_id: project.id })
                         setTaskDialogOpen(true)
-                      }}>
+                      }} className="bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30">
                         <Plus className="mr-2 size-4" /> Add Task
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleEditProject(project)}>
+                      <Button size="sm" variant="ghost" onClick={() => handleEditProject(project)} className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
                         <Edit className="size-4" />
                       </Button>
                       <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => handleDeleteProject(project.id)}>
@@ -593,24 +610,35 @@ export default function Projects() {
 
                 {/* Tasks */}
                 {isExpanded && (
-                  <div className="border-t border-slate-200 dark:border-slate-700 p-6 bg-slate-50 dark:bg-slate-900/50">
+                  <div className="border-t border-slate-200 dark:border-slate-700 p-5 bg-slate-50 dark:bg-slate-900/30">
                     <div className="mb-4 flex items-center justify-between">
-                      <h4 className="font-medium text-slate-900 dark:text-white">Tasks ({projectTasks.length})</h4>
+                      <h4 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                        <CheckCircle2 className="size-4 text-green-500" />
+                        Tasks ({projectTasks.length})
+                      </h4>
+                      {completedTasks > 0 && (
+                        <span className="text-sm text-green-600 dark:text-green-400 font-medium">
+                          {completedTasks} completed
+                        </span>
+                      )}
                     </div>
 
                     {projectTasks.length === 0 ? (
-                      <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                        No tasks yet. Click "Add Task" to create one.
+                      <div className="text-center py-8 bg-white dark:bg-slate-800 rounded-lg border border-dashed border-slate-200 dark:border-slate-700">
+                        <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                          <CheckCircle2 className="size-6 text-slate-400" />
+                        </div>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">No tasks yet. Click "Add Task" to create one.</p>
                       </div>
                     ) : (
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {projectTasks.map((task) => {
                           const assignee = employees?.find(e => e.id === task.assigned_to)
                           return (
-                            <div key={task.id} className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                            <div key={task.id} className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700 transition-colors">
                               <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-2">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     <h5 className="font-medium text-slate-900 dark:text-white">{task.title}</h5>
                                     <Badge className={taskStatusColors[task.status] || ""}>
                                       {task.status}
@@ -621,30 +649,30 @@ export default function Projects() {
                                   </div>
                                   
                                   {task.description && (
-                                    <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">{task.description}</p>
+                                    <p className="text-sm text-slate-600 dark:text-slate-300 mb-2 line-clamp-2">{task.description}</p>
                                   )}
 
-                                  <div className="flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400">
+                                  <div className="flex flex-wrap gap-3 text-sm text-slate-500 dark:text-slate-400">
                                     {assignee && (
-                                      <span className="flex items-center gap-1.5">
-                                        <CheckCircle2 className="size-4" /> {assignee.first_name} {assignee.last_name}
+                                      <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">
+                                        <CheckCircle2 className="size-3.5 text-blue-500" /> {assignee.first_name} {assignee.last_name}
                                       </span>
                                     )}
                                     {task.due_date && (
-                                      <span className="flex items-center gap-1.5">
-                                        <Calendar className="size-4" /> {new Date(task.due_date).toLocaleDateString()}
+                                      <span className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded">
+                                        <Calendar className="size-3.5 text-orange-500" /> {new Date(task.due_date).toLocaleDateString()}
                                       </span>
                                     )}
                                     {task.estimated_hours && (
-                                      <span className="flex items-center gap-1.5">
-                                        <Clock className="size-4" /> {task.estimated_hours}h est.
+                                      <span className="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded">
+                                        <Clock className="size-3.5 text-purple-500" /> {task.estimated_hours}h est.
                                       </span>
                                     )}
                                   </div>
                                 </div>
 
                                 <div className="flex items-center gap-2 ml-4">
-                                  <Button size="sm" variant="ghost" onClick={() => handleEditTask(task)}>
+                                  <Button size="sm" variant="ghost" onClick={() => handleEditTask(task)} className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
                                     <Edit className="size-4" />
                                   </Button>
                                   <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => handleDeleteTask(task.id)}>
