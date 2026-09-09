@@ -7,6 +7,8 @@ import './index.css'
 import App from './App.jsx'
 import AdminPage from './routes/Admin.jsx'
 import EmployeeDashboard from './routes/Employee.jsx'
+import Plan from './routes/Plan.jsx'
+import Notes from './routes/Notes.jsx'
 import Careers from './routes/Careers.jsx'
 import Internships from './routes/Internships.jsx'
 import News from './routes/News.jsx'
@@ -24,6 +26,8 @@ createRoot(document.getElementById('root')).render(
         <Routes>
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/employee" element={<EmployeeDashboard />} />
+          <Route path="/plan" element={<Plan />} />
+          <Route path="/notes" element={<Notes />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/internships" element={<Internships />} />
           <Route path="/news" element={<News />} />

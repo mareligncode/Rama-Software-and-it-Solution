@@ -12,8 +12,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import {
   Loader2, LogOut, LayoutDashboard, CheckCircle2, Clock, Calendar,
   User, Menu, Bell, TrendingUp, CheckCircle, FileText, Settings,
-  Mail, Phone, MapPin, Building, Key, Save,
+  Mail, Phone, MapPin, Building, Key, Save, StickyNote, Sun, Moon,
 } from "lucide-react"
+import Notes from "@/routes/Notes"
+import { useTheme } from "@/hooks/useTheme"
 
 export default function EmployeeDashboard() {
   const [session, setSession] = useState(null)
@@ -163,7 +165,8 @@ function AuthCard() {
 function Dashboard({ employee, email, userId, session }) {
   const qc = useQueryClient()
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [activeTab, setActiveTab] = useState("tasks")
+  const [activeTab, setActiveTab] = useState("dashboard")
+  const { isDark, toggleTheme } = useTheme()
   const [editProfileOpen, setEditProfileOpen] = useState(false)
   const [changePasswordOpen, setChangePasswordOpen] = useState(false)
   const [profileForm, setProfileForm] = useState({
@@ -190,6 +193,7 @@ function Dashboard({ employee, email, userId, session }) {
           console.error("Error fetching tasks:", error)
           throw error
         }
+        console.log("Tasks loaded:", data)
         return data ?? []
       } catch (err) {
         console.error("Task fetch error:", err)
@@ -257,6 +261,7 @@ function Dashboard({ employee, email, userId, session }) {
     in_progress: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
     completed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
     cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    review: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   }
 
   const priorityColors = {
@@ -329,6 +334,7 @@ function Dashboard({ employee, email, userId, session }) {
           <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} sidebarOpen={sidebarOpen} />
           <NavItem icon={CheckCircle2} label="My Tasks" badge={pendingTasks} active={activeTab === "tasks"} onClick={() => setActiveTab("tasks")} sidebarOpen={sidebarOpen} />
           <NavItem icon={FileText} label="Documents" active={activeTab === "documents"} onClick={() => setActiveTab("documents")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={StickyNote} label="Notes" active={activeTab === "notes"} onClick={() => setActiveTab("notes")} sidebarOpen={sidebarOpen} />
           <NavItem icon={Settings} label="Settings" active={activeTab === "settings"} onClick={() => setActiveTab("settings")} sidebarOpen={sidebarOpen} />
         </nav>
 
@@ -371,6 +377,15 @@ function Dashboard({ employee, email, userId, session }) {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleTheme}
+                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label="Toggle dark mode"
+              >
+                {isDark ? <Sun className="size-5 text-amber-400" /> : <Moon className="size-5 text-slate-700" />}
+              </Button>
               <Button variant="outline" size="icon" className="relative">
                 <Bell className="size-5" />
                 {pendingTasks > 0 && (
@@ -426,6 +441,9 @@ function Dashboard({ employee, email, userId, session }) {
               </TabsTrigger>
               <TabsTrigger value="documents" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <FileText className="mr-2 size-4" /> Documents
+              </TabsTrigger>
+              <TabsTrigger value="notes" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+                <StickyNote className="mr-2 size-4" /> Notes
               </TabsTrigger>
               <TabsTrigger value="settings" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <Settings className="mr-2 size-4" /> Settings
@@ -497,10 +515,19 @@ function Dashboard({ employee, email, userId, session }) {
                         {task.status === 'in_progress' && (
                           <Button
                             size="sm"
+                            onClick={() => updateTaskStatusMutation.mutate({ taskId: task.id, status: 'review' })}
+                            disabled={updateTaskStatusMutation.isPending}
+                          >
+                            <CheckCircle className="mr-2 size-4" /> Submit for Review
+                          </Button>
+                        )}
+                        {task.status === 'review' && (
+                          <Button
+                            size="sm"
                             onClick={() => updateTaskStatusMutation.mutate({ taskId: task.id, status: 'completed' })}
                             disabled={updateTaskStatusMutation.isPending}
                           >
-                            <CheckCircle className="mr-2 size-4" /> Complete Task
+                            <CheckCircle className="mr-2 size-4" /> Mark Complete
                           </Button>
                         )}
                         {task.status === 'completed' && (
@@ -525,6 +552,10 @@ function Dashboard({ employee, email, userId, session }) {
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Documents</h2>
                 <p className="text-slate-500 dark:text-slate-400">Your documents will appear here.</p>
               </div>
+            </TabsContent>
+
+            <TabsContent value="notes" className="space-y-4">
+              <Notes />
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-4">

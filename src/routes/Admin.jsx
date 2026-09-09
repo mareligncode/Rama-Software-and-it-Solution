@@ -15,14 +15,18 @@ import EmployeeProfile from "@/components/admin/EmployeeProfile"
 import Projects from "@/components/admin/Projects"
 import IdCards from "@/components/admin/IdCards"
 import Letters from "@/components/admin/Letters"
+import Plan from "@/routes/Plan"
+import Notes from "@/routes/Notes"
 import {
   Mail, Phone, Trash2, LogOut, Loader2, Inbox, Newspaper, ShieldCheck,
   Search, Sparkles, Plus, Eye, EyeOff, MapPin, CalendarDays, Users,
   ChevronLeft, ChevronRight, UserPlus, ShieldOff, Upload, X, Paperclip,
   Image, Edit, LayoutDashboard, MessageSquare, FileText, Settings, Menu,
   Bell, TrendingUp, Clock, CheckCircle2, AlertCircle, MoreVertical,
-  FolderKanban, IdCard, FileSignature, UserCircle,
+  FolderKanban, IdCard, FileSignature, UserCircle, ClipboardList, StickyNote,
+  Sun, Moon,
 } from "lucide-react"
+import { useTheme } from "@/hooks/useTheme"
 
 const CATEGORIES = ["news", "career", "internship", "event"]
 
@@ -198,6 +202,7 @@ function Dashboard({ email, userId }) {
   const published = posts?.filter((p) => p.published).length ?? 0
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeTab, setActiveTab] = useState("messages")
+  const { isDark, toggleTheme } = useTheme()
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
@@ -225,6 +230,8 @@ function Dashboard({ email, userId }) {
           <NavItem icon={FolderKanban} label="Projects" active={activeTab === "projects"} onClick={() => setActiveTab("projects")} sidebarOpen={sidebarOpen} />
           <NavItem icon={IdCard} label="ID Cards" active={activeTab === "idcards"} onClick={() => setActiveTab("idcards")} sidebarOpen={sidebarOpen} />
           <NavItem icon={FileSignature} label="Letters" active={activeTab === "letters"} onClick={() => setActiveTab("letters")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={ClipboardList} label="Plans" active={activeTab === "plans"} onClick={() => setActiveTab("plans")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={StickyNote} label="Notes" active={activeTab === "notes"} onClick={() => setActiveTab("notes")} sidebarOpen={sidebarOpen} />
           <NavItem icon={Users} label="Admins" active={activeTab === "admins"} onClick={() => setActiveTab("admins")} sidebarOpen={sidebarOpen} />
           <NavItem icon={Settings} label="Settings" active={activeTab === "settings"} onClick={() => setActiveTab("settings")} sidebarOpen={sidebarOpen} />
         </nav>
@@ -262,6 +269,15 @@ function Dashboard({ email, userId }) {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleTheme}
+                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label="Toggle dark mode"
+              >
+                {isDark ? <Sun className="size-5 text-amber-400" /> : <Moon className="size-5 text-slate-700" />}
+              </Button>
               <Button variant="outline" size="icon" className="relative">
                 <Bell className="size-5" />
                 {unread > 0 && (
@@ -335,6 +351,12 @@ function Dashboard({ email, userId }) {
               <TabsTrigger value="letters" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <FileSignature className="mr-2 size-4" /> Letters
               </TabsTrigger>
+              <TabsTrigger value="plans" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+                <ClipboardList className="mr-2 size-4" /> Plans
+              </TabsTrigger>
+              <TabsTrigger value="notes" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+                <StickyNote className="mr-2 size-4" /> Notes
+              </TabsTrigger>
               <TabsTrigger value="admins" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <Users className="mr-2 size-4" /> Admins
               </TabsTrigger>
@@ -346,6 +368,8 @@ function Dashboard({ email, userId }) {
             <TabsContent value="projects" className="space-y-4"><Projects /></TabsContent>
             <TabsContent value="idcards" className="space-y-4"><IdCards /></TabsContent>
             <TabsContent value="letters" className="space-y-4"><Letters /></TabsContent>
+            <TabsContent value="plans" className="space-y-4"><Plan /></TabsContent>
+            <TabsContent value="notes" className="space-y-4"><Notes /></TabsContent>
             <TabsContent value="admins" className="space-y-4"><Admins currentUserId={userId} /></TabsContent>
             <TabsContent value="dashboard" className="space-y-4">
               <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
