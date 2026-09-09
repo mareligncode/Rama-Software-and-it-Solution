@@ -13,6 +13,7 @@ import {
   Loader2, LogOut, LayoutDashboard, CheckCircle2, Clock, Calendar,
   User, Menu, Bell, TrendingUp, CheckCircle, FileText, Settings,
   Mail, Phone, MapPin, Building, Key, Save, StickyNote, Sun, Moon,
+  Download, Eye,
 } from "lucide-react"
 import Notes from "@/routes/Notes"
 import { useTheme } from "@/hooks/useTheme"
@@ -203,6 +204,33 @@ function Dashboard({ employee, email, userId, session }) {
     enabled: !!employee?.id,
   })
 
+  const { data: employeeDocuments, isLoading: documentsLoading } = useQuery({
+    queryKey: ["employee-documents", employee?.id],
+    queryFn: async () => {
+      if (!employee?.id) {
+        console.log("No employee ID available for documents")
+        return []
+      }
+      try {
+        const { data, error } = await supabase
+          .from("employee_documents")
+          .select("*")
+          .eq("employee_id", employee.id)
+          .order("uploaded_at", { ascending: false })
+        if (error) {
+          console.error("Error fetching documents:", error)
+          throw error
+        }
+        console.log("Documents loaded:", data)
+        return data ?? []
+      } catch (err) {
+        console.error("Document fetch error:", err)
+        return []
+      }
+    },
+    enabled: !!employee?.id,
+  })
+
   const updateTaskStatusMutation = useMutation({
     mutationFn: async ({ taskId, status }) => {
       const { error } = await supabase.rpc("update_task_status", { _task_id: taskId, _status: status })
@@ -301,6 +329,28 @@ function Dashboard({ employee, email, userId, session }) {
     }
 
     changePasswordMutation.mutate({ newPassword: passwordForm.newPassword })
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+  }
+
+  function handleDownloadDocument(fileUrl, documentName) {
+    const link = document.createElement('a')
+    link.href = fileUrl
+    link.download = documentName
+    link.target = '_blank'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  function handleViewDocument(fileUrl) {
+    window.open(fileUrl, '_blank')
   }
 
   const openEditProfile = () => {
@@ -550,7 +600,60 @@ function Dashboard({ employee, email, userId, session }) {
             <TabsContent value="documents" className="space-y-4">
               <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Documents</h2>
-                <p className="text-slate-500 dark:text-slate-400">Your documents will appear here.</p>
+                {documentsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="size-8 animate-spin text-slate-400" />
+                  </div>
+                ) : !employeeDocuments || employeeDocuments.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="mx-auto size-12 text-slate-300 mb-4" />
+                    <p className="text-slate-500 dark:text-slate-400">Your documents will appear here.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {employeeDocuments.map((doc) => (
+                      <div key={doc.id} className="border border-slate-200 dark:border-slate-700 rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <FileText className="size-5 text-blue-500" />
+                              <h3 className="font-medium text-slate-900 dark:text-white">{doc.document_name}</h3>
+                              <Badge variant="secondary" className="text-xs">
+                                {doc.document_type}
+                              </Badge>
+                            </div>
+                            {doc.description && (
+                              <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">{doc.description}</p>
+                            )}
+                            <div className="flex items-center gap-4 text-xs text-slate-400">
+                              <span>{formatFileSize(doc.file_size)}</span>
+                              <span>•</span>
+                              <span>{new Date(doc.uploaded_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleViewDocument(doc.file_url)}
+                              title="View document"
+                            >
+                              <Eye className="size-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDownloadDocument(doc.file_url, doc.document_name)}
+                              title="Download document"
+                            >
+                              <Download className="size-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </TabsContent>
 
