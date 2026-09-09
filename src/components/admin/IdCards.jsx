@@ -1,5 +1,7 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
+import React from "react"
 import { useQuery } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,13 +11,16 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { 
   IdCard, Download, Printer, Search, Loader2, Building2, 
-  Mail, Phone, MapPin, Calendar, User, Briefcase
+  Mail, Phone, MapPin, Calendar, User, Briefcase, Image as ImageIcon
 } from "lucide-react"
-import QRCode from "qrcode.react"
+import { QRCodeSVG } from "qrcode.react"
+import html2canvas from "html2canvas"
 
 export default function IdCards() {
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [search, setSearch] = useState("")
+  const [downloading, setDownloading] = useState(false)
+  const cardRef = useRef(null)
 
   const { data: employees, isLoading } = useQuery({
     queryKey: ["employees"],
@@ -54,26 +59,28 @@ export default function IdCards() {
     window.print()
   }
 
-  function handleDownload() {
-    const element = document.getElementById("id-card-preview")
-    if (element) {
-      // Create a simple download by opening in new tab
-      const printWindow = window.open("", "_blank")
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>ID Card - ${selectedEmployee?.first_name} ${selectedEmployee?.last_name}</title>
-            <style>
-              body { margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-              @media print { body { padding: 0; } }
-            </style>
-          </head>
-          <body>
-            ${element.outerHTML}
-          </body>
-        </html>
-      `)
-      printWindow.document.close()
+  async function handleDownload() {
+    if (!cardRef.current) return
+    
+    setDownloading(true)
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 2,
+        backgroundColor: null,
+        logging: false,
+      })
+      
+      const link = document.createElement('a')
+      link.download = `id-card-${selectedEmployee?.employee_id || selectedEmployee?.first_name}-${selectedEmployee?.last_name}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+      
+      toast.success("ID card downloaded successfully")
+    } catch (error) {
+      toast.error("Failed to download ID card")
+      console.error(error)
+    } finally {
+      setDownloading(false)
     }
   }
 
@@ -86,7 +93,36 @@ export default function IdCards() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #id-card-preview, #id-card-preview * {
+            visibility: visible;
+          }
+          #id-card-preview {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+          @page {
+            size: auto;
+            margin: 0;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `}</style>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -178,8 +214,12 @@ export default function IdCards() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" onClick={handleDownload}>
-                    <Download className="mr-2 size-4" /> Download
+                  <Button variant="outline" onClick={handleDownload} disabled={downloading}>
+                    {downloading ? (
+                      <><Loader2 className="mr-2 size-4 animate-spin" /> Downloading...</>
+                    ) : (
+                      <><ImageIcon className="mr-2 size-4" /> Download Image</>
+                    )}
                   </Button>
                   <Button onClick={handlePrint}>
                     <Printer className="mr-2 size-4" /> Print
@@ -188,17 +228,18 @@ export default function IdCards() {
               </div>
 
               <div id="id-card-preview" className="flex justify-center">
-                <IdCardComponent employee={selectedEmployee} companySettings={companySettings} />
+                <IdCardComponent employee={selectedEmployee} companySettings={companySettings} ref={cardRef} />
               </div>
             </>
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 
-function IdCardComponent({ employee, companySettings }) {
+const IdCardComponent = React.forwardRef(({ employee, companySettings }, ref) => {
   const cardStyle = {
     backgroundColor: companySettings?.id_card_background_color || '#ffffff',
     color: companySettings?.id_card_text_color || '#000000',
@@ -207,34 +248,33 @@ function IdCardComponent({ employee, companySettings }) {
 
   return (
     <div 
+      ref={ref}
       className="w-[350px] h-[550px] rounded-2xl shadow-2xl overflow-hidden relative print:shadow-none print:border print:border-black"
       style={{ backgroundColor: cardStyle.backgroundColor }}
     >
-      {/* Header with accent */}
+      {/* Decorative top pattern with company name */}
       <div 
-        className="h-32 relative"
-        style={{ backgroundColor: cardStyle.accentColor }}
+        className="h-36 relative overflow-hidden"
+        style={{ 
+          background: `linear-gradient(135deg, ${cardStyle.accentColor} 0%, ${cardStyle.accentColor}dd 100%)`
+        }}
       >
-        <div className="absolute inset-0 flex items-center justify-center">
-          {companySettings?.company_logo_url ? (
-            <img 
-              src={companySettings.company_logo_url} 
-              alt="Company Logo" 
-              className="h-20 object-contain"
-            />
-          ) : (
-            <div className="text-white text-center">
-              <Building2 className="size-12 mx-auto mb-2" />
-              <p className="font-bold text-xl">{companySettings?.company_name || 'Rama Software'}</p>
-            </div>
-          )}
+        {/* Decorative circles */}
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10" />
+        <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-white/5" />
+        
+        {/* Company Name in Header */}
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="text-white text-center">
+            <p className="font-bold text-xl tracking-wide">{companySettings?.company_name || 'Rama IT Solution'}</p>
+          </div>
         </div>
       </div>
 
       {/* Profile Section */}
-      <div className="px-6 -mt-12 relative z-10">
+      <div className="px-6 -mt-14 relative z-10">
         <div className="flex flex-col items-center">
-          <div className="w-24 h-24 rounded-full border-4 shadow-lg overflow-hidden bg-white">
+          <div className="w-28 h-28 rounded-full border-4 shadow-xl overflow-hidden bg-white">
             {employee.profile_image_url ? (
               <img 
                 src={employee.profile_image_url} 
@@ -242,7 +282,7 @@ function IdCardComponent({ employee, companySettings }) {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-500 text-white text-3xl font-bold">
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-4xl font-bold">
                 {employee.first_name?.[0]}{employee.last_name?.[0]}
               </div>
             )}
@@ -251,102 +291,85 @@ function IdCardComponent({ employee, companySettings }) {
           <h3 className="mt-4 text-xl font-bold text-center" style={{ color: cardStyle.color }}>
             {employee.first_name} {employee.last_name}
           </h3>
-          <p className="text-sm font-medium mt-1" style={{ color: cardStyle.accentColor }}>
+          <p className="text-sm font-semibold mt-1 uppercase tracking-wide" style={{ color: cardStyle.accentColor }}>
             {employee.job_title}
           </p>
           {employee.department && (
-            <Badge className="mt-2" style={{ backgroundColor: cardStyle.accentColor + '20', color: cardStyle.accentColor }}>
+            <div className="mt-2 px-3 py-1 rounded-full text-xs font-semibold" style={{ 
+              backgroundColor: cardStyle.accentColor + '15', 
+              color: cardStyle.accentColor 
+            }}>
               {employee.department}
-            </Badge>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Employee Details */}
-      <div className="px-6 mt-6 space-y-3" style={{ color: cardStyle.color }}>
-        <div className="flex items-center gap-3 text-sm">
-          <User className="size-4 flex-shrink-0" style={{ color: cardStyle.accentColor }} />
-          <div>
-            <p className="text-xs opacity-70">Employee ID</p>
-            <p className="font-semibold font-mono">{employee.employee_id || 'N/A'}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 text-sm">
-          <Briefcase className="size-4 flex-shrink-0" style={{ color: cardStyle.accentColor }} />
-          <div>
-            <p className="text-xs opacity-70">Department</p>
-            <p className="font-semibold">{employee.department || 'N/A'}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 text-sm">
-          <Calendar className="size-4 flex-shrink-0" style={{ color: cardStyle.accentColor }} />
-          <div>
-            <p className="text-xs opacity-70">Hire Date</p>
-            <p className="font-semibold">{employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : 'N/A'}</p>
-          </div>
-        </div>
-
-        {employee.email && (
+      {/* Employee Details with QR Code */}
+      <div className="px-6 mt-6 flex gap-4">
+        <div className="flex-1 space-y-2.5" style={{ color: cardStyle.color }}>
           <div className="flex items-center gap-3 text-sm">
-            <Mail className="size-4 flex-shrink-0" style={{ color: cardStyle.accentColor }} />
-            <div className="truncate">
-              <p className="text-xs opacity-70">Email</p>
-              <p className="font-semibold truncate">{employee.email}</p>
+            <div className="p-1.5 rounded-lg" style={{ backgroundColor: cardStyle.accentColor + '15' }}>
+              <User className="size-4" style={{ color: cardStyle.accentColor }} />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs opacity-60 uppercase tracking-wider">Employee ID</p>
+              <p className="font-semibold font-mono">{employee.employee_id || 'N/A'}</p>
             </div>
           </div>
-        )}
 
-        {employee.phone && (
           <div className="flex items-center gap-3 text-sm">
-            <Phone className="size-4 flex-shrink-0" style={{ color: cardStyle.accentColor }} />
-            <div>
-              <p className="text-xs opacity-70">Phone</p>
-              <p className="font-semibold">{employee.phone}</p>
+            <div className="p-1.5 rounded-lg" style={{ backgroundColor: cardStyle.accentColor + '15' }}>
+              <Briefcase className="size-4" style={{ color: cardStyle.accentColor }} />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs opacity-60 uppercase tracking-wider">Department</p>
+              <p className="font-semibold">{employee.department || 'N/A'}</p>
             </div>
           </div>
-        )}
 
-        {employee.city && (
           <div className="flex items-center gap-3 text-sm">
-            <MapPin className="size-4 flex-shrink-0" style={{ color: cardStyle.accentColor }} />
-            <div>
-              <p className="text-xs opacity-70">Location</p>
-              <p className="font-semibold">{employee.city}, {employee.country}</p>
+            <div className="p-1.5 rounded-lg" style={{ backgroundColor: cardStyle.accentColor + '15' }}>
+              <Calendar className="size-4" style={{ color: cardStyle.accentColor }} />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs opacity-60 uppercase tracking-wider">Hire Date</p>
+              <p className="font-semibold">{employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : 'N/A'}</p>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* QR Code */}
-      <div className="px-6 mt-6 flex justify-center">
-        <div className="bg-white p-3 rounded-lg shadow-sm">
-          <QRCode 
-            value={JSON.stringify({
-              id: employee.employee_id,
-              name: `${employee.first_name} ${employee.last_name}`,
-              email: employee.email,
-              company: companySettings?.company_name || 'Rama Software'
-            })}
-            size={100}
-            level="H"
-            includeMargin={false}
-          />
+          {employee.phone && (
+            <div className="flex items-center gap-3 text-sm">
+              <div className="p-1.5 rounded-lg" style={{ backgroundColor: cardStyle.accentColor + '15' }}>
+                <Phone className="size-4" style={{ color: cardStyle.accentColor }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs opacity-60 uppercase tracking-wider">Phone</p>
+                <p className="font-semibold">{employee.phone}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* QR Code on the right */}
+        <div className="flex flex-col justify-center">
+          <div className="bg-white p-3 rounded-xl shadow-lg border-2" style={{ borderColor: cardStyle.accentColor + '30' }}>
+            <QRCodeSVG 
+              value="https://ramaitsolution.com/"
+              size={90}
+              level="H"
+              includeMargin={false}
+            />
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-0 left-0 right-0 px-6 py-3 text-center border-t" style={{ borderColor: cardStyle.color + '20' }}>
-        <p className="text-xs font-medium" style={{ color: cardStyle.color, opacity: 0.7 }}>
-          {companySettings?.company_name || 'Rama Software'}
-        </p>
-        {companySettings?.website && (
-          <p className="text-xs" style={{ color: cardStyle.color, opacity: 0.5 }}>
-            {companySettings.website}
-          </p>
-        )}
+      <div className="absolute bottom-0 left-0 right-0 px-6 py-4 text-center" style={{ 
+        backgroundColor: cardStyle.accentColor + '08',
+        borderTop: `1px solid ${cardStyle.accentColor}20`
+      }}>
       </div>
     </div>
   )
-}
+})

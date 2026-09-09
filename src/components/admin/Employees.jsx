@@ -14,14 +14,19 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { 
   Users, Plus, Edit, Trash2, Search, Upload, X, Loader2, 
   Mail, Phone, MapPin, Calendar, Building, DollarSign, 
-  User, Briefcase, AlertCircle, CheckCircle2
+  User, Briefcase, AlertCircle, CheckCircle2, FileText,
+  Download, FolderOpen
 } from "lucide-react"
 
 export default function Employees() {
   const qc = useQueryClient()
   const [search, setSearch] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [documentsDialogOpen, setDocumentsDialogOpen] = useState(false)
+  const [selectedEmployeeForDocs, setSelectedEmployeeForDocs] = useState(null)
   const [editingEmployee, setEditingEmployee] = useState(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadingProfile, setUploadingProfile] = useState(false)
   const [formData, setFormData] = useState({
     employee_id: "",
     first_name: "",
@@ -39,6 +44,12 @@ export default function Employees() {
     emergency_contact_name: "",
     emergency_contact_phone: "",
     status: "active",
+    profile_image_url: "",
+  })
+  const [newDocument, setNewDocument] = useState({
+    document_name: "",
+    document_type: "other",
+    description: "",
   })
 
   const { data: employees, isLoading } = useQuery({
@@ -51,6 +62,21 @@ export default function Employees() {
       if (error) throw error
       return data
     },
+  })
+
+  const { data: employeeDocuments, isLoading: documentsLoading } = useQuery({
+    queryKey: ["employee-documents", selectedEmployeeForDocs?.id],
+    queryFn: async () => {
+      if (!selectedEmployeeForDocs?.id) return []
+      const { data, error } = await supabase
+        .from("employee_documents")
+        .select("*")
+        .eq("employee_id", selectedEmployeeForDocs.id)
+        .order("uploaded_at", { ascending: false })
+      if (error) throw error
+      return data
+    },
+    enabled: !!selectedEmployeeForDocs?.id,
   })
 
   const createMutation = useMutation({
@@ -99,6 +125,82 @@ export default function Employees() {
     },
   })
 
+  const uploadDocumentMutation = useMutation({
+    mutationFn: async ({ employeeId, file, documentData }) => {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${employeeId}/${Date.now()}.${fileExt}`
+      
+      const { error: uploadError } = await supabase.storage
+        .from('employees')
+        .upload(fileName, file)
+      
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('employees')
+        .getPublicUrl(fileName)
+
+      const { error: dbError } = await supabase.from("employee_documents").insert({
+        employee_id: employeeId,
+        document_name: documentData.document_name,
+        document_type: documentData.document_type,
+        file_url: publicUrl,
+        file_size: file.size,
+        description: documentData.description,
+      })
+
+      if (dbError) throw dbError
+    },
+    onSuccess: () => {
+      toast.success("Document uploaded successfully")
+      qc.invalidateQueries({ queryKey: ["employee-documents", selectedEmployeeForDocs?.id] })
+      setNewDocument({ document_name: "", document_type: "other", description: "" })
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
+
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (documentId) => {
+      const { error } = await supabase.from("employee_documents").delete().eq("id", documentId)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      toast.success("Document deleted successfully")
+      qc.invalidateQueries({ queryKey: ["employee-documents", selectedEmployeeForDocs?.id] })
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
+
+  const uploadProfileImageMutation = useMutation({
+    mutationFn: async ({ file, employeeId }) => {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `profiles/${employeeId || 'temp'}-${Date.now()}.${fileExt}`
+      
+      const { error: uploadError } = await supabase.storage
+        .from('employees')
+        .upload(fileName, file)
+      
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('employees')
+        .getPublicUrl(fileName)
+
+      return publicUrl
+    },
+    onSuccess: (publicUrl) => {
+      setFormData({ ...formData, profile_image_url: publicUrl })
+      toast.success("Profile image uploaded successfully")
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
+
   function resetForm() {
     setFormData({
       employee_id: "",
@@ -117,6 +219,7 @@ export default function Employees() {
       emergency_contact_name: "",
       emergency_contact_phone: "",
       status: "active",
+      profile_image_url: "",
     })
     setEditingEmployee(null)
   }
@@ -156,6 +259,7 @@ export default function Employees() {
       emergency_contact_name: employee.emergency_contact_name || "",
       emergency_contact_phone: employee.emergency_contact_phone || "",
       status: employee.status || "active",
+      profile_image_url: employee.profile_image_url || "",
     })
     setDialogOpen(true)
   }
@@ -164,6 +268,74 @@ export default function Employees() {
     if (confirm("Are you sure you want to delete this employee?")) {
       deleteMutation.mutate(id)
     }
+  }
+
+  function handleProfileImageUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    setUploadingProfile(true)
+    uploadProfileImageMutation.mutate(
+      { 
+        file, 
+        employeeId: editingEmployee?.id || formData.employee_id || 'temp'
+      },
+      {
+        onSettled: () => {
+          setUploadingProfile(false)
+        }
+      }
+    )
+  }
+
+  function handleOpenDocuments(employee) {
+    setSelectedEmployeeForDocs(employee)
+    setDocumentsDialogOpen(true)
+  }
+
+  function handleDocumentUpload(e) {
+    e.preventDefault()
+    const fileInput = document.getElementById('document-file')
+    const file = fileInput?.files?.[0]
+    
+    if (!file) {
+      toast.error("Please select a file to upload")
+      return
+    }
+
+    if (!newDocument.document_name) {
+      toast.error("Please enter a document name")
+      return
+    }
+
+    setUploading(true)
+    uploadDocumentMutation.mutate(
+      { 
+        employeeId: selectedEmployeeForDocs.id, 
+        file, 
+        documentData: newDocument 
+      },
+      {
+        onSettled: () => {
+          setUploading(false)
+          if (fileInput) fileInput.value = ''
+        }
+      }
+    )
+  }
+
+  function handleDeleteDocument(documentId) {
+    if (confirm("Are you sure you want to delete this document?")) {
+      deleteDocumentMutation.mutate(documentId)
+    }
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
   }
 
   const filteredEmployees = employees?.filter(emp =>
@@ -247,6 +419,48 @@ export default function Employees() {
                         <SelectItem value="on_leave">On Leave</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                </div>
+
+                {/* Profile Image Upload */}
+                <div className="border-t pt-4">
+                  <Label>Profile Image</Label>
+                  <div className="mt-2 flex items-center gap-4">
+                    {formData.profile_image_url ? (
+                      <div className="relative">
+                        <img 
+                          src={formData.profile_image_url} 
+                          alt="Profile" 
+                          className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute -top-2 -right-2 size-6 rounded-full bg-red-500 text-white hover:bg-red-600"
+                          onClick={() => setFormData({ ...formData, profile_image_url: "" })}
+                        >
+                          <X className="size-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-dashed border-slate-300">
+                        <User className="size-8 text-slate-400" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <Input
+                        id="profile-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProfileImageUpload}
+                        disabled={uploadingProfile}
+                        className="mt-0"
+                      />
+                      {uploadingProfile && (
+                        <p className="text-xs text-slate-500 mt-1">Uploading...</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -497,6 +711,9 @@ export default function Employees() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Button size="sm" variant="ghost" onClick={() => handleOpenDocuments(employee)}>
+                        <FolderOpen className="size-4" />
+                      </Button>
                       <Button size="sm" variant="ghost" onClick={() => handleEdit(employee)}>
                         <Edit className="size-4" />
                       </Button>
@@ -511,6 +728,140 @@ export default function Employees() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Documents Dialog */}
+      <Dialog open={documentsDialogOpen} onOpenChange={(open) => {
+        setDocumentsDialogOpen(open)
+        if (!open) setSelectedEmployeeForDocs(null)
+      }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Documents - {selectedEmployeeForDocs?.first_name} {selectedEmployeeForDocs?.last_name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Upload Form */}
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
+              <h3 className="font-medium text-slate-900 dark:text-white mb-3">Upload New Document</h3>
+              <form onSubmit={handleDocumentUpload} className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="document_name">Document Name *</Label>
+                    <Input
+                      id="document_name"
+                      value={newDocument.document_name}
+                      onChange={(e) => setNewDocument({ ...newDocument, document_name: e.target.value })}
+                      placeholder="e.g., Employment Contract"
+                      required
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="document_type">Document Type</Label>
+                    <Select value={newDocument.document_type} onValueChange={(value) => setNewDocument({ ...newDocument, document_type: value })}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cv">CV/Resume</SelectItem>
+                        <SelectItem value="contract">Contract</SelectItem>
+                        <SelectItem value="id_card">ID Card</SelectItem>
+                        <SelectItem value="certificate">Certificate</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="document-file">File *</Label>
+                  <Input
+                    id="document-file"
+                    type="file"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={newDocument.description}
+                    onChange={(e) => setNewDocument({ ...newDocument, description: e.target.value })}
+                    placeholder="Optional description of the document"
+                    className="mt-1"
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <><Loader2 className="mr-2 size-4 animate-spin" /> Uploading...</>
+                  ) : (
+                    <><Upload className="mr-2 size-4" /> Upload Document</>
+                  )}
+                </Button>
+              </form>
+            </div>
+
+            {/* Documents List */}
+            <div>
+              <h3 className="font-medium text-slate-900 dark:text-white mb-3">
+                Uploaded Documents ({employeeDocuments?.length || 0})
+              </h3>
+              
+              {documentsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="size-6 animate-spin text-slate-400" />
+                </div>
+              ) : !employeeDocuments || employeeDocuments.length === 0 ? (
+                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                  No documents uploaded yet
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {employeeDocuments.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                          <FileText className="size-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900 dark:text-white truncate">{doc.document_name}</p>
+                          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {doc.document_type}
+                            </Badge>
+                            <span>{formatFileSize(doc.file_size)}</span>
+                            <span>{new Date(doc.uploaded_at).toLocaleDateString()}</span>
+                          </div>
+                          {doc.description && (
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">{doc.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        <Button size="sm" variant="outline" onClick={() => window.open(doc.file_url, '_blank')}>
+                          <Download className="size-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => handleDeleteDocument(doc.id)}>
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
