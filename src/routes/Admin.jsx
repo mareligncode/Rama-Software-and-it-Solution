@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import Employees from "@/components/admin/Employees"
 import EmployeeProfile from "@/components/admin/EmployeeProfile"
 import Projects from "@/components/admin/Projects"
@@ -24,7 +25,7 @@ import {
   Image, Edit, LayoutDashboard, MessageSquare, FileText, Settings, Menu,
   Bell, TrendingUp, Clock, CheckCircle2, AlertCircle, MoreVertical,
   FolderKanban, IdCard, FileSignature, UserCircle, ClipboardList, StickyNote,
-  Sun, Moon,
+  Sun, Moon, Key, Save,
 } from "lucide-react"
 import { useTheme } from "@/hooks/useTheme"
 
@@ -178,6 +179,17 @@ function AuthCard() {
 }
 
 function Dashboard({ email, userId }) {
+  const qc = useQueryClient()
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [activeTab, setActiveTab] = useState("messages")
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+  const { isDark, toggleTheme } = useTheme()
+  
   const { data: messages } = useQuery({
     queryKey: ["admin-messages"],
     queryFn: async () => {
@@ -198,11 +210,52 @@ function Dashboard({ email, userId }) {
     },
   })
 
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data) => {
+      const { error } = await supabase.auth.updateUser({
+        password: data.newPassword
+      })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      toast.success("Password changed successfully")
+      setChangePasswordOpen(false)
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" })
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("New passwords do not match")
+      return
+    }
+    
+    if (passwordForm.newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters")
+      return
+    }
+
+    // Verify current password
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: passwordForm.currentPassword,
+    })
+    
+    if (signInError) {
+      toast.error("Current password is incorrect")
+      return
+    }
+
+    changePasswordMutation.mutate({ newPassword: passwordForm.newPassword })
+  }
+
   const unread = messages?.filter((m) => !m.is_read).length ?? 0
   const published = posts?.filter((p) => p.published).length ?? 0
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [activeTab, setActiveTab] = useState("messages")
-  const { isDark, toggleTheme } = useTheme()
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
@@ -379,13 +432,90 @@ function Dashboard({ email, userId }) {
             </TabsContent>
             <TabsContent value="settings" className="space-y-4">
               <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Settings</h2>
-                <p className="text-slate-500 dark:text-slate-400">Settings panel coming soon.</p>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Security</h2>
+                  <Button size="sm" variant="outline" onClick={() => setChangePasswordOpen(true)}>
+                    <Key className="mr-2 size-4" /> Change Password
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      <span className="font-medium">Email:</span> {email}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      <span className="font-medium">Role:</span> Administrator
+                    </p>
+                  </div>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
         </div>
       </main>
+
+      {/* Change Password Dialog */}
+      <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={passwordForm.currentPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                required
+                className="mt-1.5"
+              />
+            </div>
+            <div>
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                required
+                minLength={8}
+                className="mt-1.5"
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                required
+                minLength={8}
+                className="mt-1.5"
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setChangePasswordOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={changePasswordMutation.isPending}
+              >
+                {changePasswordMutation.isPending ? (
+                  <><Loader2 className="mr-2 size-4 animate-spin" /> Changing...</>
+                ) : (
+                  <><Key className="mr-2 size-4" /> Change Password</>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
