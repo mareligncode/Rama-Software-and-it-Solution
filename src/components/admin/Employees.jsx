@@ -46,6 +46,7 @@ export default function Employees() {
     emergency_contact_phone: "",
     status: "active",
     profile_image_url: "",
+    user_id: "",
   })
   const [newDocument, setNewDocument] = useState({
     document_name: "",
@@ -62,6 +63,15 @@ export default function Employees() {
         .order("created_at", { ascending: false })
       if (error) throw error
       return data
+    },
+  })
+
+  const { data: authUsers } = useQuery({
+    queryKey: ["auth-users"],
+    queryFn: async () => {
+      const { data, error } = await supabase.auth.admin.listUsers()
+      if (error) throw error
+      return data.users
     },
   })
 
@@ -82,8 +92,32 @@ export default function Employees() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
+      // Check if employee_id already exists
+      if (data.employee_id) {
+        const { data: existing } = await supabase
+          .from("employees")
+          .select("employee_id")
+          .eq("employee_id", data.employee_id)
+          .single()
+        
+        if (existing) {
+          throw new Error("Employee ID already exists. Please use a unique ID.")
+        }
+      }
+
       const { error } = await supabase.from("employees").insert(data)
       if (error) throw error
+
+      // Assign employee role if user_id is provided
+      if (data.user_id) {
+        const { error: roleError } = await supabase.from("user_roles").insert({
+          user_id: data.user_id,
+          role: "employee"
+        })
+        if (roleError && !roleError.message.includes('duplicate key')) {
+          console.error('Role assignment error:', roleError)
+        }
+      }
     },
     onSuccess: () => {
       toast.success("Employee created successfully")
@@ -97,9 +131,26 @@ export default function Employees() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }) => {
+    mutationFn: async ({ id, data, previousUserId }) => {
       const { error } = await supabase.from("employees").update(data).eq("id", id)
       if (error) throw error
+
+      // Handle role assignment when user_id changes
+      if (previousUserId && previousUserId !== data.user_id) {
+        // Remove employee role from previous user
+        await supabase.from("user_roles").delete().eq("user_id", previousUserId).eq("role", "employee")
+      }
+      
+      if (data.user_id && data.user_id !== previousUserId) {
+        // Assign employee role to new user
+        const { error: roleError } = await supabase.from("user_roles").insert({
+          user_id: data.user_id,
+          role: "employee"
+        })
+        if (roleError && !roleError.message.includes('duplicate key')) {
+          console.error('Role assignment error:', roleError)
+        }
+      }
     },
     onSuccess: () => {
       toast.success("Employee updated successfully")
@@ -221,6 +272,7 @@ export default function Employees() {
       emergency_contact_phone: "",
       status: "active",
       profile_image_url: "",
+      user_id: "",
     })
     setEditingEmployee(null)
   }
@@ -235,7 +287,11 @@ export default function Employees() {
     }
 
     if (editingEmployee) {
-      updateMutation.mutate({ id: editingEmployee.id, data: payload })
+      updateMutation.mutate({ 
+        id: editingEmployee.id, 
+        data: payload,
+        previousUserId: editingEmployee.user_id 
+      })
     } else {
       createMutation.mutate(payload)
     }
@@ -261,6 +317,7 @@ export default function Employees() {
       emergency_contact_phone: employee.emergency_contact_phone || "",
       status: employee.status || "active",
       profile_image_url: employee.profile_image_url || "",
+      user_id: employee.user_id || "",
     })
     setDialogOpen(true)
   }
@@ -613,6 +670,29 @@ export default function Employees() {
                   </div>
                 </div>
 
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Dashboard Access</p>
+                  <div>
+                    <Label htmlFor="user_id">Link to User Account (for Employee Dashboard)</Label>
+                    <Select value={formData.user_id} onValueChange={(value) => setFormData({ ...formData, user_id: value })}>
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Select a user account to link" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">No user account linked</SelectItem>
+                        {authUsers?.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.email} {user.email === formData.email && "(matches employee email)"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Link this employee to a user account so they can access the employee dashboard. The user must have the same email as the employee.
+                    </p>
+                  </div>
+                </div>
+
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancel
@@ -646,13 +726,14 @@ export default function Employees() {
               <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Department</TableHead>
               <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Hire Date</TableHead>
               <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Status</TableHead>
+              <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Dashboard</TableHead>
               <TableHead className="text-right font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredEmployees.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-slate-500">
+                <TableCell colSpan={8} className="text-center py-12 text-slate-500">
                   No employees found
                 </TableCell>
               </TableRow>
@@ -713,6 +794,17 @@ export default function Employees() {
                       {employee.status === "terminated" && <AlertCircle className="size-3 mr-1" />}
                       {employee.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {employee.user_id ? (
+                      <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">
+                        <CheckCircle2 className="size-3 mr-1" /> Linked
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-400 border-0">
+                        Not Linked
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">

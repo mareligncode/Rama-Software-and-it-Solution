@@ -6,6 +6,7 @@ import { Toaster } from 'sonner'
 import './index.css'
 import App from './App.jsx'
 import AdminPage from './routes/Admin.jsx'
+import EmployeeDashboard from './routes/Employee.jsx'
 import Careers from './routes/Careers.jsx'
 import Internships from './routes/Internships.jsx'
 import News from './routes/News.jsx'
@@ -22,6 +23,7 @@ createRoot(document.getElementById('root')).render(
       <HashRouter>
         <Routes>
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/employee" element={<EmployeeDashboard />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/internships" element={<Internships />} />
           <Route path="/news" element={<News />} />
