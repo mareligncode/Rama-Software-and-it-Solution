@@ -11,11 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   Users, Plus, Edit, Trash2, Search, Upload, X, Loader2, 
   Mail, Phone, MapPin, Calendar, Building, DollarSign, 
   User, Briefcase, AlertCircle, CheckCircle2, FileText,
-  Download, FolderOpen
+  Download, FolderOpen, Eye
 } from "lucide-react"
 
 export default function Employees() {
@@ -635,17 +636,17 @@ export default function Employees() {
       </div>
 
       {/* Employees Table */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
             <TableRow>
-              <TableHead>Employee</TableHead>
-              <TableHead>Employee ID</TableHead>
-              <TableHead>Job Title</TableHead>
-              <TableHead>Department</TableHead>
-              <TableHead>Hire Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Employee</TableHead>
+              <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Employee ID</TableHead>
+              <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Job Title</TableHead>
+              <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Department</TableHead>
+              <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Hire Date</TableHead>
+              <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Status</TableHead>
+              <TableHead className="text-right font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -657,13 +658,17 @@ export default function Employees() {
               </TableRow>
             ) : (
               filteredEmployees.map((employee) => (
-                <TableRow key={employee.id}>
+                <TableRow key={employee.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="size-10 bg-gradient-to-br from-blue-500 to-indigo-500">
-                        <AvatarFallback className="text-white font-semibold">
-                          {employee.first_name?.[0]}{employee.last_name?.[0]}
-                        </AvatarFallback>
+                        {employee.profile_image_url ? (
+                          <img src={employee.profile_image_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <AvatarFallback className="text-white font-semibold">
+                            {employee.first_name?.[0]}{employee.last_name?.[0]}
+                          </AvatarFallback>
+                        )}
                       </Avatar>
                       <div>
                         <p className="font-medium text-slate-900 dark:text-white">
@@ -676,21 +681,21 @@ export default function Employees() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="font-mono text-sm">{employee.employee_id || "-"}</span>
+                    <span className="font-mono text-sm text-slate-600 dark:text-slate-400">{employee.employee_id || "-"}</span>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                      <Briefcase className="size-4" /> {employee.job_title}
+                      <Briefcase className="size-4 text-blue-500" /> {employee.job_title}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                      <Building className="size-4" /> {employee.department || "-"}
+                      <Building className="size-4 text-purple-500" /> {employee.department || "-"}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                      <Calendar className="size-4" /> {employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : "-"}
+                      <Calendar className="size-4 text-green-500" /> {employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : "-"}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -796,17 +801,31 @@ export default function Employees() {
                   />
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  disabled={uploading}
-                >
-                  {uploading ? (
-                    <><Loader2 className="mr-2 size-4 animate-spin" /> Uploading...</>
-                  ) : (
-                    <><Upload className="mr-2 size-4" /> Upload Document</>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    type="submit" 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    disabled={uploading}
+                  >
+                    {uploading ? (
+                      <><Loader2 className="mr-2 size-4 animate-spin" /> Uploading...</>
+                    ) : (
+                      <><Upload className="mr-2 size-4" /> Upload Document</>
+                    )}
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setNewDocument({ document_name: "", document_type: "other", description: "" })
+                      const fileInput = document.getElementById('document-file')
+                      if (fileInput) fileInput.value = ''
+                    }}
+                    disabled={uploading}
+                  >
+                    <Plus className="mr-2 size-4" /> Add Another
+                  </Button>
+                </div>
               </form>
             </div>
 
@@ -847,6 +866,9 @@ export default function Employees() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 ml-4">
+                        <Button size="sm" variant="outline" onClick={() => window.open(doc.file_url, '_blank')}>
+                          <Eye className="size-4" />
+                        </Button>
                         <Button size="sm" variant="outline" onClick={() => window.open(doc.file_url, '_blank')}>
                           <Download className="size-4" />
                         </Button>

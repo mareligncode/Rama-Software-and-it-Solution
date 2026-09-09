@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import Employees from "@/components/admin/Employees"
+import EmployeeProfile from "@/components/admin/EmployeeProfile"
 import Projects from "@/components/admin/Projects"
 import IdCards from "@/components/admin/IdCards"
 import Letters from "@/components/admin/Letters"
@@ -20,7 +21,7 @@ import {
   ChevronLeft, ChevronRight, UserPlus, ShieldOff, Upload, X, Paperclip,
   Image, Edit, LayoutDashboard, MessageSquare, FileText, Settings, Menu,
   Bell, TrendingUp, Clock, CheckCircle2, AlertCircle, MoreVertical,
-  FolderKanban, IdCard, FileSignature,
+  FolderKanban, IdCard, FileSignature, UserCircle,
 } from "lucide-react"
 
 const CATEGORIES = ["news", "career", "internship", "event"]
@@ -220,6 +221,7 @@ function Dashboard({ email, userId }) {
           <NavItem icon={MessageSquare} label="Messages" badge={unread} active={activeTab === "messages"} onClick={() => setActiveTab("messages")} sidebarOpen={sidebarOpen} />
           <NavItem icon={FileText} label="Posts" active={activeTab === "posts"} onClick={() => setActiveTab("posts")} sidebarOpen={sidebarOpen} />
           <NavItem icon={Users} label="Employees" active={activeTab === "employees"} onClick={() => setActiveTab("employees")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={UserCircle} label="Employee Profile" active={activeTab === "employee-profile"} onClick={() => setActiveTab("employee-profile")} sidebarOpen={sidebarOpen} />
           <NavItem icon={FolderKanban} label="Projects" active={activeTab === "projects"} onClick={() => setActiveTab("projects")} sidebarOpen={sidebarOpen} />
           <NavItem icon={IdCard} label="ID Cards" active={activeTab === "idcards"} onClick={() => setActiveTab("idcards")} sidebarOpen={sidebarOpen} />
           <NavItem icon={FileSignature} label="Letters" active={activeTab === "letters"} onClick={() => setActiveTab("letters")} sidebarOpen={sidebarOpen} />
@@ -321,6 +323,9 @@ function Dashboard({ email, userId }) {
               <TabsTrigger value="employees" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <Users className="mr-2 size-4" /> Employees
               </TabsTrigger>
+              <TabsTrigger value="employee-profile" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+                <UserCircle className="mr-2 size-4" /> Employee Profile
+              </TabsTrigger>
               <TabsTrigger value="projects" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <FolderKanban className="mr-2 size-4" /> Projects
               </TabsTrigger>
@@ -337,6 +342,7 @@ function Dashboard({ email, userId }) {
             <TabsContent value="messages" className="space-y-4"><Messages /></TabsContent>
             <TabsContent value="posts" className="space-y-4"><Posts /></TabsContent>
             <TabsContent value="employees" className="space-y-4"><Employees /></TabsContent>
+            <TabsContent value="employee-profile" className="space-y-4"><EmployeeProfile /></TabsContent>
             <TabsContent value="projects" className="space-y-4"><Projects /></TabsContent>
             <TabsContent value="idcards" className="space-y-4"><IdCards /></TabsContent>
             <TabsContent value="letters" className="space-y-4"><Letters /></TabsContent>
