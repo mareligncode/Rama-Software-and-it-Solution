@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { QRCodeSVG } from "qrcode.react"
 import defaultLogo from "@/assets/logo.png"
 import { 
   FileText, Plus, Edit, Trash2, Search, Loader2, 
@@ -45,6 +46,14 @@ Please confirm your acceptance of this offer by signing and returning this docum
 
 We look forward to having you as part of our team and growing together in the future.`,
     variables: ["job_title", "department", "start_date", "acceptance_deadline"],
+    company_name: "Rama Software And IT Solutions",
+    company_address: "Bole Road, Addis Ababa, Ethiopia",
+    company_email: "info@ramasoftware.com",
+    company_website: "www.ramasoftware.com",
+    company_phone: "+251-911-000000",
+    signer_name: "Daniel Marion",
+    signer_title: "General Manager",
+    qr_code_content: "https://ramaitsolution.com/",
     header_color: "#071B3B",
     footer_color: "#071B3B",
     accent_color: "#0D3B8E",
@@ -72,6 +81,14 @@ New Position Details:
 
 We have full confidence in your abilities to lead and excel in this new role, and we look forward to your continued success.`,
     variables: ["new_position", "department", "effective_date", "manager_name"],
+    company_name: "Rama Software And IT Solutions",
+    company_address: "Bole Road, Addis Ababa, Ethiopia",
+    company_email: "info@ramasoftware.com",
+    company_website: "www.ramasoftware.com",
+    company_phone: "+251-911-000000",
+    signer_name: "Daniel Marion",
+    signer_title: "General Manager",
+    qr_code_content: "https://ramaitsolution.com/",
     header_color: "#071B3B",
     footer_color: "#071B3B",
     accent_color: "#0D3B8E",
@@ -81,6 +98,31 @@ We have full confidence in your abilities to lead and excel in this new role, an
     show_company_info: true,
   }
 ]
+
+// Helper to extract extra dynamic contact fields safely
+function getExtraData(template) {
+  if (!template) return {}
+  if (template.footer_text) {
+    try {
+      const parsed = JSON.parse(template.footer_text)
+      if (typeof parsed === "object" && parsed !== null) {
+        return parsed
+      }
+    } catch {
+      // not JSON, plain string
+    }
+  }
+  return {
+    company_name: template.company_name,
+    company_address: template.company_address,
+    company_email: template.company_email,
+    company_website: template.company_website,
+    company_phone: template.company_phone,
+    signer_name: template.signer_name,
+    signer_title: template.signer_title,
+    qr_code_content: template.qr_code_content,
+  }
+}
 
 export default function Letters() {
   const qc = useQueryClient()
@@ -103,14 +145,29 @@ export default function Letters() {
     recipient_phone: "",
     letter_date: "",
     reference_number: "",
+    company_name: "Rama Software And IT Solutions",
+    company_address: "Bole Road, Addis Ababa, Ethiopia",
+    company_email: "info@ramasoftware.com",
+    company_website: "www.ramasoftware.com",
+    company_phone: "+251-911-000000",
+    signer_name: "Daniel Marion",
+    signer_title: "General Manager",
+    qr_code_content: "https://ramaitsolution.com/",
   })
   
   const [templateForm, setTemplateForm] = useState({
     name: "",
-    type: "custom",
-    subject: "",
+    type: "hire",
+    subject: "JOB OFFER LETTER",
     body: "",
     variables: "[]",
+    company_name: "Rama Software And IT Solutions",
+    company_address: "Bole Road, Addis Ababa, Ethiopia",
+    company_email: "info@ramasoftware.com",
+    company_website: "www.ramasoftware.com",
+    company_phone: "+251-911-000000",
+    signer_name: "Daniel Marion",
+    signer_title: "General Manager",
     header_color: "#071B3B",
     footer_color: "#071B3B",
     accent_color: "#0D3B8E",
@@ -118,7 +175,7 @@ export default function Letters() {
     background_color: "#FFFFFF",
     company_logo_url: "",
     show_qr_code: true,
-    qr_code_content: "",
+    qr_code_content: "https://ramaitsolution.com/",
     show_company_info: true,
     header_text: "",
     footer_text: "",
@@ -143,6 +200,14 @@ export default function Letters() {
     recipient_country: "",
     recipient_email: "",
     recipient_phone: "",
+    company_name: "Rama Software And IT Solutions",
+    company_address: "Bole Road, Addis Ababa, Ethiopia",
+    company_email: "info@ramasoftware.com",
+    company_website: "www.ramasoftware.com",
+    company_phone: "+251-911-000000",
+    signer_name: "Daniel Marion",
+    signer_title: "General Manager",
+    qr_code_content: "https://ramaitsolution.com/",
     letter_date: new Date().toISOString().split('T')[0],
     reference_number: `REF-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
   })
@@ -207,13 +272,13 @@ export default function Letters() {
         console.warn("Could not fetch company_settings:", error)
       }
       return data || {
-        company_name: "RAMA SOFTWARE & IT SOLUTIONS",
-        company_address: "123 Anywhere St., Any City, ST 12345",
-        company_email: "hello@reallygreatsite.com",
-        company_phone: "123-456-7890",
-        company_website: "www.reallygreatsite.com",
+        company_name: "Rama Software And IT Solutions",
+        company_address: "Bole Road, Addis Ababa, Ethiopia",
+        company_email: "info@ramasoftware.com",
+        company_phone: "+251-911-000000",
+        company_website: "www.ramasoftware.com",
         manager_name: "Daniel Marion",
-        manager_title: "Head of Marketing",
+        manager_title: "General Manager",
       }
     },
   })
@@ -267,24 +332,40 @@ export default function Letters() {
 
   const generateLetterMutation = useMutation({
     mutationFn: async (data) => {
-      const template = templates?.find(t => t.id === data.template_id)
+      const template = templates?.find(t => t.id === data.template_id) || allTemplatesList.find(t => t.id === data.template_id || t.name === data.template_id)
+      const templateExtra = getExtraData(template)
       const employee = employees?.find(e => e.id === data.employee_id)
       const variablesData = JSON.parse(data.variables_data || "{}")
       
       let body = template?.body || ""
-      let subject = template?.subject || ""
+      let subject = template?.subject || "OFFICIAL LETTER"
       
+      const compName = data.company_name || templateExtra.company_name || companySettings?.company_name || "Rama Software And IT Solutions"
+      const compEmail = data.company_email || templateExtra.company_email || companySettings?.company_email || "info@ramasoftware.com"
+      const compWeb = data.company_website || templateExtra.company_website || companySettings?.company_website || "www.ramasoftware.com"
+      const compPhone = data.company_phone || templateExtra.company_phone || companySettings?.company_phone || "+251-911-000000"
+      const compAddr = data.company_address || templateExtra.company_address || companySettings?.company_address || "Bole Road, Addis Ababa, Ethiopia"
+      const signName = data.signer_name || templateExtra.signer_name || companySettings?.manager_name || "Daniel Marion"
+      const signTitle = data.signer_title || templateExtra.signer_title || companySettings?.manager_title || "General Manager"
+      const qrUrl = data.qr_code_content || templateExtra.qr_code_content || "https://ramaitsolution.com/"
+
       // Auto fill standard variables
       const mergedVariables = {
         recipient_name: data.recipient_name || (employee ? `${employee.first_name} ${employee.last_name}` : "Valued Candidate"),
         employee_name: employee ? `${employee.first_name} ${employee.last_name}` : data.recipient_name || "Employee",
         job_title: employee?.job_title || variablesData.job_title || "Digital Marketing Associate",
         department: employee?.department || variablesData.department || "Marketing & Communications",
-        company_name: companySettings?.company_name || "RAMA SOFTWARE & IT SOLUTIONS",
+        company_name: compName,
+        company_email: compEmail,
+        company_website: compWeb,
+        company_phone: compPhone,
+        company_address: compAddr,
+        signer_name: signName,
+        signer_title: signTitle,
         letter_date: data.letter_date || new Date().toLocaleDateString(),
         reference_number: data.reference_number || "REF-001",
-        manager_name: companySettings?.manager_name || "Daniel Marion",
-        manager_title: companySettings?.manager_title || "Head of Marketing",
+        manager_name: signName,
+        manager_title: signTitle,
         ...variablesData,
       }
 
@@ -301,11 +382,21 @@ export default function Letters() {
         subject: subject,
         body: body,
         letter_type: template?.type || "custom",
-        variables_data: mergedVariables,
+        variables_data: {
+          ...mergedVariables,
+          company_name: compName,
+          company_email: compEmail,
+          company_website: compWeb,
+          company_phone: compPhone,
+          company_address: compAddr,
+          signer_name: signName,
+          signer_title: signTitle,
+          qr_code_content: qrUrl,
+        },
         recipient_name: mergedVariables.recipient_name,
-        recipient_address: data.recipient_address || "123 Anywhere St., Any City, ST 12345",
-        recipient_city: data.recipient_city || "Any City",
-        recipient_country: data.recipient_country || "ST 12345",
+        recipient_address: data.recipient_address || "",
+        recipient_city: data.recipient_city || "",
+        recipient_country: data.recipient_country || "",
         recipient_email: data.recipient_email || "",
         recipient_phone: data.recipient_phone || "",
         letter_date: data.letter_date,
@@ -333,10 +424,17 @@ export default function Letters() {
   function resetTemplateForm() {
     setTemplateForm({
       name: "",
-      type: "custom",
-      subject: "",
+      type: "hire",
+      subject: "JOB OFFER LETTER",
       body: "",
       variables: "[]",
+      company_name: companySettings?.company_name || "Rama Software And IT Solutions",
+      company_address: companySettings?.company_address || "Bole Road, Addis Ababa, Ethiopia",
+      company_email: "info@ramasoftware.com",
+      company_website: "www.ramasoftware.com",
+      company_phone: "+251-911-000000",
+      signer_name: companySettings?.manager_name || "Daniel Marion",
+      signer_title: companySettings?.manager_title || "General Manager",
       header_color: "#071B3B",
       footer_color: "#071B3B",
       accent_color: "#0D3B8E",
@@ -344,7 +442,7 @@ export default function Letters() {
       background_color: "#FFFFFF",
       company_logo_url: "",
       show_qr_code: true,
-      qr_code_content: "",
+      qr_code_content: "https://ramaitsolution.com/",
       show_company_info: true,
       header_text: "",
       footer_text: "",
@@ -371,6 +469,14 @@ export default function Letters() {
       recipient_country: "",
       recipient_email: "",
       recipient_phone: "",
+      company_name: companySettings?.company_name || "Rama Software And IT Solutions",
+      company_address: companySettings?.company_address || "Bole Road, Addis Ababa, Ethiopia",
+      company_email: "info@ramasoftware.com",
+      company_website: "www.ramasoftware.com",
+      company_phone: "+251-911-000000",
+      signer_name: companySettings?.manager_name || "Daniel Marion",
+      signer_title: companySettings?.manager_title || "General Manager",
+      qr_code_content: "https://ramaitsolution.com/",
       letter_date: new Date().toISOString().split('T')[0],
       reference_number: `REF-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
     })
@@ -385,6 +491,14 @@ export default function Letters() {
       subject: preset.subject,
       body: preset.body,
       variables: JSON.stringify(preset.variables, null, 2),
+      company_name: preset.company_name || "Rama Software And IT Solutions",
+      company_address: preset.company_address || "Bole Road, Addis Ababa, Ethiopia",
+      company_email: preset.company_email || "info@ramasoftware.com",
+      company_website: preset.company_website || "www.ramasoftware.com",
+      company_phone: preset.company_phone || "+251-911-000000",
+      signer_name: preset.signer_name || "Daniel Marion",
+      signer_title: preset.signer_title || "General Manager",
+      qr_code_content: preset.qr_code_content || "https://ramaitsolution.com/",
       header_color: preset.header_color,
       footer_color: preset.footer_color,
       accent_color: preset.accent_color,
@@ -437,11 +551,43 @@ export default function Letters() {
     } catch {
       parsedVariables = []
     }
+
+    // Package dynamic contact fields into footer_text JSON so it never throws schema column errors
+    const extraInfo = {
+      company_name: templateForm.company_name,
+      company_address: templateForm.company_address,
+      company_email: templateForm.company_email,
+      company_website: templateForm.company_website,
+      company_phone: templateForm.company_phone,
+      signer_name: templateForm.signer_name,
+      signer_title: templateForm.signer_title,
+      qr_code_content: templateForm.qr_code_content,
+    }
     
+    // Clean database payload matching exact Supabase letter_templates columns
     const payload = {
-      ...templateForm,
-      company_logo_url: logoUrl,
+      name: templateForm.name,
+      type: templateForm.type,
+      subject: templateForm.subject,
+      body: templateForm.body,
       variables: parsedVariables,
+      header_color: templateForm.header_color,
+      footer_color: templateForm.footer_color,
+      accent_color: templateForm.accent_color,
+      text_color: templateForm.text_color,
+      background_color: templateForm.background_color,
+      company_logo_url: logoUrl,
+      show_qr_code: templateForm.show_qr_code,
+      qr_code_content: templateForm.qr_code_content,
+      show_company_info: templateForm.show_company_info,
+      header_text: templateForm.header_text || "",
+      footer_text: JSON.stringify(extraInfo),
+      font_family: templateForm.font_family,
+      font_size: templateForm.font_size,
+      margin_top: templateForm.margin_top,
+      margin_bottom: templateForm.margin_bottom,
+      margin_left: templateForm.margin_left,
+      margin_right: templateForm.margin_right,
     }
     
     if (editingTemplate) {
@@ -453,12 +599,22 @@ export default function Letters() {
 
   function handleEditTemplate(template) {
     setEditingTemplate(template)
+    const extra = getExtraData(template)
+
     setTemplateForm({
       name: template.name || "",
-      type: template.type || "custom",
-      subject: template.subject || "",
+      type: template.type || "hire",
+      subject: template.subject || "JOB OFFER LETTER",
       body: template.body || "",
       variables: JSON.stringify(template.variables || [], null, 2),
+      company_name: extra.company_name || companySettings?.company_name || "Rama Software And IT Solutions",
+      company_address: extra.company_address || companySettings?.company_address || "Bole Road, Addis Ababa, Ethiopia",
+      company_email: extra.company_email || "info@ramasoftware.com",
+      company_website: extra.company_website || "www.ramasoftware.com",
+      company_phone: extra.company_phone || "+251-911-000000",
+      signer_name: extra.signer_name || companySettings?.manager_name || "Daniel Marion",
+      signer_title: extra.signer_title || companySettings?.manager_title || "General Manager",
+      qr_code_content: extra.qr_code_content || template.qr_code_content || "https://ramaitsolution.com/",
       header_color: template.header_color || "#071B3B",
       footer_color: template.footer_color || "#071B3B",
       accent_color: template.accent_color || "#0D3B8E",
@@ -466,7 +622,6 @@ export default function Letters() {
       background_color: template.background_color || "#FFFFFF",
       company_logo_url: template.company_logo_url || "",
       show_qr_code: template.show_qr_code !== undefined ? template.show_qr_code : true,
-      qr_code_content: template.qr_code_content || "",
       show_company_info: template.show_company_info !== undefined ? template.show_company_info : true,
       header_text: template.header_text || "",
       footer_text: template.footer_text || "",
@@ -488,15 +643,24 @@ export default function Letters() {
   }
 
   function handlePreviewLetter(letter) {
+    const vars = letter.variables_data || {}
     setPreviewContent({ 
       subject: letter.subject, 
       body: letter.body,
-      recipient_name: letter.recipient_name,
-      recipient_address: letter.recipient_address,
-      recipient_city: letter.recipient_city,
-      recipient_country: letter.recipient_country,
-      recipient_email: letter.recipient_email,
-      recipient_phone: letter.recipient_phone,
+      recipient_name: letter.recipient_name || vars.recipient_name,
+      recipient_address: letter.recipient_address || vars.recipient_address,
+      recipient_city: letter.recipient_city || vars.recipient_city,
+      recipient_country: letter.recipient_country || vars.recipient_country,
+      recipient_email: letter.recipient_email || vars.recipient_email,
+      recipient_phone: letter.recipient_phone || vars.recipient_phone,
+      company_name: vars.company_name || companySettings?.company_name || "Rama Software And IT Solutions",
+      company_address: vars.company_address || companySettings?.company_address || "Bole Road, Addis Ababa, Ethiopia",
+      company_email: vars.company_email || "info@ramasoftware.com",
+      company_website: vars.company_website || "www.ramasoftware.com",
+      company_phone: vars.company_phone || "+251-911-000000",
+      signer_name: vars.signer_name || companySettings?.manager_name || "Daniel Marion",
+      signer_title: vars.signer_title || companySettings?.manager_title || "General Manager",
+      qr_code_content: vars.qr_code_content || "https://ramaitsolution.com/",
       letter_date: letter.letter_date,
       reference_number: letter.reference_number,
     })
@@ -506,23 +670,41 @@ export default function Letters() {
   }
 
   function handlePreviewTemplate(template) {
+    const extra = getExtraData(template)
+    const compName = extra.company_name || template.company_name || companySettings?.company_name || "Rama Software And IT Solutions"
+    const signTitle = extra.signer_title || template.signer_title || companySettings?.manager_title || "General Manager"
+    const signName = extra.signer_name || template.signer_name || companySettings?.manager_name || "Daniel Marion"
+    const compAddr = extra.company_address || template.company_address || companySettings?.company_address || "Bole Road, Addis Ababa, Ethiopia"
+    const compEmail = extra.company_email || template.company_email || "info@ramasoftware.com"
+    const compWeb = extra.company_website || template.company_website || "www.ramasoftware.com"
+    const compPhone = extra.company_phone || template.company_phone || "+251-911-000000"
+    const qrUrl = extra.qr_code_content || template.qr_code_content || "https://ramaitsolution.com/"
+
     setPreviewContent({
       subject: template.subject || "JOB OFFER LETTER",
       body: template.body
         .replace(/{{recipient_name}}/g, "Aisha Rahman")
-        .replace(/{{company_name}}/g, companySettings?.company_name || "Impact Inc.")
+        .replace(/{{company_name}}/g, compName)
         .replace(/{{job_title}}/g, "Digital Marketing Associate")
         .replace(/{{department}}/g, "Marketing & Communications")
         .replace(/{{start_date}}/g, "August 5, 2026")
         .replace(/{{acceptance_deadline}}/g, "July 30, 2026")
-        .replace(/{{manager_name}}/g, companySettings?.manager_name || "Daniel Marion")
-        .replace(/{{manager_title}}/g, companySettings?.manager_title || "Head of Marketing"),
+        .replace(/{{manager_name}}/g, signName)
+        .replace(/{{manager_title}}/g, signTitle),
       recipient_name: "Aisha Rahman",
-      recipient_address: "123 Anywhere St., Any City, ST 12345",
-      recipient_city: "Any City",
-      recipient_country: "ST 12345",
+      recipient_address: "",
+      recipient_city: "",
+      recipient_country: "",
       recipient_email: "aisha.rahman@example.com",
-      recipient_phone: "+1 234 567 8900",
+      recipient_phone: "+251-911-000000",
+      company_name: compName,
+      company_address: compAddr,
+      company_email: compEmail,
+      company_website: compWeb,
+      company_phone: compPhone,
+      signer_name: signName,
+      signer_title: signTitle,
+      qr_code_content: qrUrl,
       letter_date: new Date().toISOString().split('T')[0],
       reference_number: "REF-2026-089",
     })
@@ -673,7 +855,7 @@ export default function Letters() {
             <h1 className="text-2xl font-bold">Executive Letters & Templates</h1>
           </div>
           <p className="text-sm text-slate-300">
-            Generate and print branded job offers, appointment letters, and official agreements with custom logos
+            Generate and print branded job offers, appointment letters, and official agreements with custom dynamic contacts & QR codes
           </p>
         </div>
 
@@ -720,6 +902,7 @@ export default function Letters() {
               )}
 
               <form onSubmit={handleTemplateSubmit} className="space-y-6 pt-2">
+                {/* Basic Template Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="template_name" className="text-xs font-semibold">Template Name *</Label>
@@ -769,17 +952,113 @@ export default function Letters() {
                     onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })}
                     placeholder="Use {{recipient_name}}, {{job_title}}, {{department}}, {{start_date}} for variables"
                     required
-                    className="mt-1 min-h-[200px] font-sans text-sm leading-relaxed"
+                    className="mt-1 min-h-[180px] font-sans text-sm leading-relaxed"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
                     Tip: Bullet points starting with • or - will format into clean structured detail lists.
                   </p>
                 </div>
 
+                {/* Dynamic Company Info & Contacts */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    <Building2 className="size-4 text-blue-600" /> Dynamic Company Details & Contacts
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Company Name (Top Header)</Label>
+                      <Input
+                        value={templateForm.company_name}
+                        onChange={(e) => setTemplateForm({ ...templateForm, company_name: e.target.value })}
+                        placeholder="Rama Software And IT Solutions"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Company Address (Top Header)</Label>
+                      <Input
+                        value={templateForm.company_address}
+                        onChange={(e) => setTemplateForm({ ...templateForm, company_address: e.target.value })}
+                        placeholder="Bole Road, Addis Ababa, Ethiopia"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <Label className="text-xs flex items-center gap-1.5">
+                        <Mail className="size-3 text-blue-600" /> Company Email (Footer)
+                      </Label>
+                      <Input
+                        value={templateForm.company_email}
+                        onChange={(e) => setTemplateForm({ ...templateForm, company_email: e.target.value })}
+                        placeholder="info@ramasoftware.com"
+                        className="mt-1 font-mono text-xs"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs flex items-center gap-1.5">
+                        <Globe className="size-3 text-blue-600" /> Company Website (Footer)
+                      </Label>
+                      <Input
+                        value={templateForm.company_website}
+                        onChange={(e) => setTemplateForm({ ...templateForm, company_website: e.target.value })}
+                        placeholder="www.ramasoftware.com"
+                        className="mt-1 font-mono text-xs"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs flex items-center gap-1.5">
+                        <Phone className="size-3 text-blue-600" /> Company Phone (Footer)
+                      </Label>
+                      <Input
+                        value={templateForm.company_phone}
+                        onChange={(e) => setTemplateForm({ ...templateForm, company_phone: e.target.value })}
+                        placeholder="+251-911-000000"
+                        className="mt-1 font-mono text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+                    <div>
+                      <Label className="text-xs">Signer Full Name</Label>
+                      <Input
+                        value={templateForm.signer_name}
+                        onChange={(e) => setTemplateForm({ ...templateForm, signer_name: e.target.value })}
+                        placeholder="Daniel Marion"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Signer Job Title</Label>
+                      <Input
+                        value={templateForm.signer_title}
+                        onChange={(e) => setTemplateForm({ ...templateForm, signer_title: e.target.value })}
+                        placeholder="General Manager"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs flex items-center gap-1.5">
+                        <QrCode className="size-3 text-blue-600" /> QR Code Redirect URL
+                      </Label>
+                      <Input
+                        value={templateForm.qr_code_content}
+                        onChange={(e) => setTemplateForm({ ...templateForm, qr_code_content: e.target.value })}
+                        placeholder="https://ramaitsolution.com/"
+                        className="mt-1 font-mono text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 {/* Logo & Branding */}
                 <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-4">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                    <Palette className="size-4 text-blue-600" /> Header Logo & Geometry Theme
+                    <Palette className="size-4 text-blue-600" /> Header Logo & Colors
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
@@ -793,7 +1072,7 @@ export default function Letters() {
                           className="text-xs"
                         />
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-1">PNG, JPG, or SVG with transparent background recommended</p>
+                      <p className="text-[11px] text-slate-500 mt-1">PNG, JPG, or SVG with transparent background</p>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -903,8 +1182,21 @@ export default function Letters() {
                   <div>
                     <Label className="text-xs font-semibold">Select Template *</Label>
                     <Select value={generateForm.template_id} onValueChange={(value) => {
-                      setGenerateForm({ ...generateForm, template_id: value })
-                      setSelectedTemplate(allTemplatesList.find(t => t.id === value || t.name === value))
+                      const t = allTemplatesList.find(x => x.id === value || x.name === value)
+                      const extra = getExtraData(t)
+                      setGenerateForm(prev => ({
+                        ...prev,
+                        template_id: value,
+                        company_name: extra.company_name || prev.company_name,
+                        company_address: extra.company_address || prev.company_address,
+                        company_email: extra.company_email || prev.company_email,
+                        company_website: extra.company_website || prev.company_website,
+                        company_phone: extra.company_phone || prev.company_phone,
+                        signer_name: extra.signer_name || prev.signer_name,
+                        signer_title: extra.signer_title || prev.signer_title,
+                        qr_code_content: extra.qr_code_content || prev.qr_code_content,
+                      }))
+                      setSelectedTemplate(t)
                     }}>
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Choose a template" />
@@ -972,9 +1264,9 @@ export default function Letters() {
                   </div>
 
                   <div>
-                    <Label className="text-xs">Recipient Address</Label>
+                    <Label className="text-xs">Recipient Address (Optional)</Label>
                     <Input
-                      placeholder="e.g. 123 Anywhere St., Any City, ST 12345"
+                      placeholder="e.g. Bole Road, Addis Ababa, Ethiopia"
                       value={generateForm.recipient_address}
                       onChange={(e) => setGenerateForm({ ...generateForm, recipient_address: e.target.value })}
                       className="mt-1"
@@ -998,6 +1290,65 @@ export default function Letters() {
                         value={generateForm.recipient_email}
                         onChange={(e) => setGenerateForm({ ...generateForm, recipient_email: e.target.value })}
                         className="mt-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dynamic Contact Overrides for this Letter */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-3">
+                  <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                    <span>Letterhead Contact Details</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Dynamic for this letter</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                    <div>
+                      <Label className="text-[11px]">Email</Label>
+                      <Input
+                        value={generateForm.company_email}
+                        onChange={(e) => setGenerateForm({ ...generateForm, company_email: e.target.value })}
+                        placeholder="info@ramasoftware.com"
+                        className="mt-1 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[11px]">Website</Label>
+                      <Input
+                        value={generateForm.company_website}
+                        onChange={(e) => setGenerateForm({ ...generateForm, company_website: e.target.value })}
+                        placeholder="www.ramasoftware.com"
+                        className="mt-1 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[11px]">Phone</Label>
+                      <Input
+                        value={generateForm.company_phone}
+                        onChange={(e) => setGenerateForm({ ...generateForm, company_phone: e.target.value })}
+                        placeholder="+251-911-000000"
+                        className="mt-1 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
+                    <div>
+                      <Label className="text-[11px]">Signer Name</Label>
+                      <Input
+                        value={generateForm.signer_name}
+                        onChange={(e) => setGenerateForm({ ...generateForm, signer_name: e.target.value })}
+                        placeholder="Daniel Marion"
+                        className="mt-1 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[11px]">Signer Title</Label>
+                      <Input
+                        value={generateForm.signer_title}
+                        onChange={(e) => setGenerateForm({ ...generateForm, signer_title: e.target.value })}
+                        placeholder="General Manager"
+                        className="mt-1 text-xs"
                       />
                     </div>
                   </div>
@@ -1056,81 +1407,95 @@ export default function Letters() {
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredTemplates.map((template, idx) => (
-                <div
-                  key={template.id || idx}
-                  className="group bg-white dark:bg-slate-800/90 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-2 mb-3">
-                      <Badge className={typeColors[template.type] || typeColors.custom}>
-                        {template.type}
-                      </Badge>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="size-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40"
-                          onClick={() => handlePreviewTemplate(template)}
-                          title="Preview Letter Template"
-                        >
-                          <Eye className="size-4" />
-                        </Button>
-                        {template.id && (
-                          <>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="size-8 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
-                              onClick={() => handleEditTemplate(template)}
-                              title="Edit Template"
-                            >
-                              <Edit className="size-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="size-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
-                              onClick={() => handleDeleteTemplate(template.id)}
-                              title="Delete Template"
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </>
-                        )}
+              {filteredTemplates.map((template, idx) => {
+                const extra = getExtraData(template)
+                return (
+                  <div
+                    key={template.id || idx}
+                    className="group bg-white dark:bg-slate-800/90 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <Badge className={typeColors[template.type] || typeColors.custom}>
+                          {template.type}
+                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="size-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40"
+                            onClick={() => handlePreviewTemplate(template)}
+                            title="Preview Letter Template"
+                          >
+                            <Eye className="size-4" />
+                          </Button>
+                          {template.id && (
+                            <>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-8 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
+                                onClick={() => handleEditTemplate(template)}
+                                title="Edit Template"
+                              >
+                                <Edit className="size-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
+                                onClick={() => handleDeleteTemplate(template.id)}
+                                title="Delete Template"
+                              >
+                                <Trash2 className="size-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
+
+                      <h3 className="font-bold text-base text-slate-900 dark:text-white mb-1.5 group-hover:text-blue-600 transition-colors">
+                        {template.name}
+                      </h3>
+                      <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2">
+                        Title: {template.subject}
+                      </p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 mb-4 leading-relaxed font-sans">
+                        {template.body}
+                      </p>
                     </div>
 
-                    <h3 className="font-bold text-base text-slate-900 dark:text-white mb-1.5 group-hover:text-blue-600 transition-colors">
-                      {template.name}
-                    </h3>
-                    <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2">
-                      Title: {template.subject}
-                    </p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 mb-4 leading-relaxed font-sans">
-                      {template.body}
-                    </p>
+                    <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                      <span className="text-[11px] text-slate-400 truncate max-w-[150px]">
+                        {extra.company_name || "Rama Software And IT Solutions"}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-8 border-blue-200 dark:border-blue-800 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
+                        onClick={() => {
+                          setGenerateForm(prev => ({
+                            ...prev,
+                            template_id: template.id || template.name,
+                            company_name: extra.company_name || prev.company_name,
+                            company_address: extra.company_address || prev.company_address,
+                            company_email: extra.company_email || prev.company_email,
+                            company_website: extra.company_website || prev.company_website,
+                            company_phone: extra.company_phone || prev.company_phone,
+                            signer_name: extra.signer_name || prev.signer_name,
+                            signer_title: extra.signer_title || prev.signer_title,
+                            qr_code_content: extra.qr_code_content || prev.qr_code_content,
+                          }))
+                          setSelectedTemplate(template)
+                          setGenerateDialogOpen(true)
+                        }}
+                      >
+                        Use Template
+                      </Button>
+                    </div>
                   </div>
-
-                  <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                    <span className="text-[11px] text-slate-400">
-                      Executive Letterhead Theme
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-xs h-8 border-blue-200 dark:border-blue-800 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
-                      onClick={() => {
-                        setGenerateForm(prev => ({ ...prev, template_id: template.id || template.name }))
-                        setSelectedTemplate(template)
-                        setGenerateDialogOpen(true)
-                      }}
-                    >
-                      Use Template
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </TabsContent>
@@ -1202,7 +1567,7 @@ export default function Letters() {
       </Tabs>
 
       {/* ------------------------------------------------------------------ */}
-      {/* EXECUTIVE LETTER PREVIEW & PRINT DIALOG (MATCHING EXACT ATTACHED DESIGN) */}
+      {/* EXECUTIVE LETTER PREVIEW & PRINT DIALOG */}
       {/* ------------------------------------------------------------------ */}
       <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-slate-900/90 text-white border-slate-700 p-6 rounded-3xl backdrop-blur-xl">
@@ -1213,7 +1578,7 @@ export default function Letters() {
                 Executive Letterhead Preview
               </DialogTitle>
               <p className="text-xs text-slate-400">
-                Pixel-perfect layout with top/bottom geometric accents, uploaded branding, and clean typography
+                Dynamic contacts & QR code linking to <span className="text-blue-400 font-mono">https://ramaitsolution.com/</span>
               </p>
             </div>
 
@@ -1249,17 +1614,19 @@ export default function Letters() {
 
 // -----------------------------------------------------------------------------
 // EXECUTIVE LETTERHEAD COMPONENT
-// Faithfully matching the provided visual reference with geometric accents & branding
+// Fully dynamic contact information & QR Code redirecting to https://ramaitsolution.com/
 // -----------------------------------------------------------------------------
 function ExecutiveLetterhead({ template, content, companySettings }) {
+  const extra = getExtraData(template)
   const brandLogo = template?.company_logo_url || companySettings?.company_logo_url || defaultLogo
-  const companyName = companySettings?.company_name || "RAMA SOFTWARE & IT SOLUTIONS"
-  const companyAddress = companySettings?.company_address || "123 Anywhere St., Any City, ST 12345"
-  const companyEmail = companySettings?.company_email || "hello@reallygreatsite.com"
-  const companyPhone = companySettings?.company_phone || "123-456-7890"
-  const companyWebsite = companySettings?.company_website || companySettings?.website || "www.reallygreatsite.com"
-  const signerName = companySettings?.manager_name || "Daniel Marion"
-  const signerTitle = companySettings?.manager_title || "Head of Marketing"
+  const companyName = content.company_name || extra.company_name || companySettings?.company_name || "Rama Software And IT Solutions"
+  const companyAddress = content.company_address || extra.company_address || companySettings?.company_address || "Bole Road, Addis Ababa, Ethiopia"
+  const companyEmail = content.company_email || extra.company_email || "info@ramasoftware.com"
+  const companyPhone = content.company_phone || extra.company_phone || "+251-911-000000"
+  const companyWebsite = content.company_website || extra.company_website || "www.ramasoftware.com"
+  const signerName = content.signer_name || extra.signer_name || companySettings?.manager_name || "Daniel Marion"
+  const signerTitle = content.signer_title || extra.signer_title || companySettings?.manager_title || "General Manager"
+  const qrCodeUrl = content.qr_code_content || extra.qr_code_content || template?.qr_code_content || "https://ramaitsolution.com/"
 
   // Parse body text into structured paragraphs and bullet items
   const bodyLines = (content.body || "").split("\n")
@@ -1298,12 +1665,14 @@ function ExecutiveLetterhead({ template, content, companySettings }) {
         {/* Top-Right Company Logo and Address */}
         <div className="flex items-center gap-4 text-right z-10">
           <div>
-            <h2 className="font-extrabold text-base tracking-tight text-slate-900">
+            <h2 className="font-extrabold text-base tracking-tight text-slate-900 uppercase">
               {companyName}
             </h2>
-            <p className="text-[11px] text-slate-500 font-medium leading-tight">
-              {companyAddress}
-            </p>
+            {companyAddress && (
+              <p className="text-[11px] text-slate-500 font-medium leading-tight">
+                {companyAddress}
+              </p>
+            )}
           </div>
 
           <div className="size-14 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center p-1.5 overflow-hidden shrink-0">
@@ -1332,9 +1701,11 @@ function ExecutiveLetterhead({ template, content, companySettings }) {
         <div className="flex items-start justify-between text-xs text-slate-800 leading-relaxed pt-2">
           <div>
             <p className="font-bold text-slate-900 text-sm">To:</p>
-            <p className="font-bold text-slate-900 text-sm">{content.recipient_name || "Aisha Rahman"}</p>
-            <p className="text-slate-600">{content.recipient_address || "123 Anywhere St., Any City, ST 12345"}</p>
-            {content.recipient_city && (
+            <p className="font-bold text-slate-900 text-sm">{content.recipient_name || "Valued Candidate"}</p>
+            {content.recipient_address && (
+              <p className="text-slate-600">{content.recipient_address}</p>
+            )}
+            {(content.recipient_city || content.recipient_country) && (
               <p className="text-slate-600">
                 {[content.recipient_city, content.recipient_country].filter(Boolean).join(", ")}
               </p>
@@ -1432,21 +1803,33 @@ function ExecutiveLetterhead({ template, content, companySettings }) {
         </div>
       </div>
 
-      {/* ---------------- BOTTOM FOOTER GEOMETRY & CONTACTS ---------------- */}
+      {/* ---------------- BOTTOM FOOTER GEOMETRY & CONTACTS & QR CODE ---------------- */}
       <div className="relative w-full flex items-end justify-between pb-6 px-8 mt-4">
-        {/* Bottom-Left Contact Information with Icons */}
-        <div className="space-y-1 text-[11px] text-slate-600 font-medium z-10 pl-2">
-          <div className="flex items-center gap-2">
-            <Mail className="size-3.5 text-blue-700 shrink-0" />
-            <span>{companyEmail}</span>
+        {/* Bottom-Left Contact Information & QR Code */}
+        <div className="flex items-center gap-4 z-10 pl-2">
+          {/* Functional QR Code that redirects to https://ramaitsolution.com/ */}
+          <div className="size-16 rounded-xl bg-white p-1.5 border border-slate-200 shadow-sm flex flex-col items-center justify-center shrink-0">
+            <QRCodeSVG
+              value={qrCodeUrl}
+              size={50}
+              level="M"
+              includeMargin={false}
+            />
           </div>
-          <div className="flex items-center gap-2">
-            <Globe className="size-3.5 text-blue-700 shrink-0" />
-            <span>{companyWebsite}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Phone className="size-3.5 text-blue-700 shrink-0" />
-            <span>{companyPhone}</span>
+
+          <div className="space-y-1 text-[11px] text-slate-600 font-medium">
+            <div className="flex items-center gap-2">
+              <Mail className="size-3.5 text-blue-700 shrink-0" />
+              <span>{companyEmail}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Globe className="size-3.5 text-blue-700 shrink-0" />
+              <span>{companyWebsite}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Phone className="size-3.5 text-blue-700 shrink-0" />
+              <span>{companyPhone}</span>
+            </div>
           </div>
         </div>
 
