@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
 import React from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -9,9 +9,11 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { 
   IdCard, Download, Printer, Search, Loader2, Building2, 
-  Mail, Phone, MapPin, Calendar, User, Briefcase, Image as ImageIcon
+  Mail, Phone, MapPin, Calendar, User, Briefcase, Image as ImageIcon,
+  Settings, Palette
 } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import html2canvas from "html2canvas"
@@ -20,7 +22,24 @@ export default function IdCards() {
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [search, setSearch] = useState("")
   const [downloading, setDownloading] = useState(false)
+  const [customizationDialogOpen, setCustomizationDialogOpen] = useState(false)
   const cardRef = useRef(null)
+  
+  const [customization, setCustomization] = useState({
+    background_color: '#ffffff',
+    text_color: '#000000',
+    accent_color: '#2563eb',
+    background_style: 'solid',
+    font_family: 'sans-serif',
+    header_height: '144',
+    qr_code_size: 90,
+    border_radius: 16,
+    card_width: 350,
+    card_height: 550,
+    show_phone: true,
+    show_department: true,
+    font_size: 'normal',
+  })
 
   const { data: employees, isLoading } = useQuery({
     queryKey: ["employees"],
@@ -44,6 +63,60 @@ export default function IdCards() {
         .single()
       if (error) throw error
       return data
+    },
+  })
+
+  // Initialize customization from company settings
+  React.useEffect(() => {
+    if (companySettings) {
+      setCustomization({
+        background_color: companySettings.id_card_background_color || '#ffffff',
+        text_color: companySettings.id_card_text_color || '#000000',
+        accent_color: companySettings.id_card_accent_color || '#2563eb',
+        background_style: 'solid',
+        font_family: companySettings.id_card_font_family || 'sans-serif',
+        font_size: companySettings.id_card_font_size || 'normal',
+        qr_code_size: companySettings.id_card_qr_code_size || 90,
+        border_radius: companySettings.id_card_border_radius || 16,
+        card_width: companySettings.id_card_card_width || 350,
+        card_height: companySettings.id_card_card_height || 550,
+        header_height: companySettings.id_card_header_height || 144,
+        show_phone: companySettings.id_card_show_phone !== false,
+        show_department: companySettings.id_card_show_department !== false,
+      })
+    }
+  }, [companySettings])
+
+  const qc = useQueryClient()
+
+  const saveCustomizationMutation = useMutation({
+    mutationFn: async (settings) => {
+      const { error } = await supabase
+        .from("company_settings")
+        .update({
+          id_card_background_color: settings.background_color,
+          id_card_text_color: settings.text_color,
+          id_card_accent_color: settings.accent_color,
+          id_card_font_family: settings.font_family,
+          id_card_font_size: settings.font_size,
+          id_card_qr_code_size: settings.qr_code_size,
+          id_card_border_radius: settings.border_radius,
+          id_card_card_width: settings.card_width,
+          id_card_card_height: settings.card_height,
+          id_card_header_height: settings.header_height,
+          id_card_show_phone: settings.show_phone,
+          id_card_show_department: settings.show_department,
+        })
+        .eq("id", companySettings?.id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      toast.success("Customization saved successfully")
+      qc.invalidateQueries({ queryKey: ["company-settings"] })
+      setCustomizationDialogOpen(false)
+    },
+    onError: (error) => {
+      toast.error(error.message)
     },
   })
 
@@ -214,13 +287,209 @@ export default function IdCards() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" onClick={handleDownload} disabled={downloading}>
+                  <Dialog open={customizationDialogOpen} onOpenChange={setCustomizationDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline">
+                        <Palette className="mr-2 size-4" /> Customize
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Customize ID Card</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="bg-color">Background Color</Label>
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <Input
+                                id="bg-color"
+                                type="color"
+                                value={customization.background_color}
+                                onChange={(e) => setCustomization({ ...customization, background_color: e.target.value })}
+                                className="w-20 h-10 p-1"
+                              />
+                              <Input
+                                value={customization.background_color}
+                                onChange={(e) => setCustomization({ ...customization, background_color: e.target.value })}
+                                className="flex-1"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label htmlFor="text-color">Text Color</Label>
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <Input
+                                id="text-color"
+                                type="color"
+                                value={customization.text_color}
+                                onChange={(e) => setCustomization({ ...customization, text_color: e.target.value })}
+                                className="w-20 h-10 p-1"
+                              />
+                              <Input
+                                value={customization.text_color}
+                                onChange={(e) => setCustomization({ ...customization, text_color: e.target.value })}
+                                className="flex-1"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="accent-color">Accent Color</Label>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <Input
+                              id="accent-color"
+                              type="color"
+                              value={customization.accent_color}
+                              onChange={(e) => setCustomization({ ...customization, accent_color: e.target.value })}
+                              className="w-20 h-10 p-1"
+                            />
+                            <Input
+                              value={customization.accent_color}
+                              onChange={(e) => setCustomization({ ...customization, accent_color: e.target.value })}
+                              className="flex-1"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="font-family">Font Family</Label>
+                            <Select value={customization.font_family} onValueChange={(value) => setCustomization({ ...customization, font_family: value })}>
+                              <SelectTrigger className="mt-1.5">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="sans-serif">Sans Serif</SelectItem>
+                                <SelectItem value="serif">Serif</SelectItem>
+                                <SelectItem value="monospace">Monospace</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="font-size">Font Size</Label>
+                            <Select value={customization.font_size} onValueChange={(value) => setCustomization({ ...customization, font_size: value })}>
+                              <SelectTrigger className="mt-1.5">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="small">Small</SelectItem>
+                                <SelectItem value="normal">Normal</SelectItem>
+                                <SelectItem value="large">Large</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="qr-size">QR Code Size</Label>
+                            <Input
+                              id="qr-size"
+                              type="number"
+                              value={customization.qr_code_size}
+                              onChange={(e) => setCustomization({ ...customization, qr_code_size: parseInt(e.target.value) || 90 })}
+                              min="60"
+                              max="120"
+                              className="mt-1.5"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="border-radius">Border Radius</Label>
+                            <Input
+                              id="border-radius"
+                              type="number"
+                              value={customization.border_radius}
+                              onChange={(e) => setCustomization({ ...customization, border_radius: parseInt(e.target.value) || 16 })}
+                              min="0"
+                              max="32"
+                              className="mt-1.5"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="header-height">Header Height</Label>
+                            <Input
+                              id="header-height"
+                              type="number"
+                              value={customization.header_height}
+                              onChange={(e) => setCustomization({ ...customization, header_height: parseInt(e.target.value) || 144 })}
+                              min="100"
+                              max="200"
+                              className="mt-1.5"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="card-width">Card Width</Label>
+                            <Input
+                              id="card-width"
+                              type="number"
+                              value={customization.card_width}
+                              onChange={(e) => setCustomization({ ...customization, card_width: parseInt(e.target.value) || 350 })}
+                              min="300"
+                              max="400"
+                              className="mt-1.5"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="card-height">Card Height</Label>
+                            <Input
+                              id="card-height"
+                              type="number"
+                              value={customization.card_height}
+                              onChange={(e) => setCustomization({ ...customization, card_height: parseInt(e.target.value) || 550 })}
+                              min="400"
+                              max="700"
+                              className="mt-1.5"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="show-phone"
+                              checked={customization.show_phone}
+                              onChange={(e) => setCustomization({ ...customization, show_phone: e.target.checked })}
+                              className="w-4 h-4"
+                            />
+                            <Label htmlFor="show-phone" className="cursor-pointer">Show Phone Number</Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="show-department"
+                              checked={customization.show_department}
+                              onChange={(e) => setCustomization({ ...customization, show_department: e.target.checked })}
+                              className="w-4 h-4"
+                            />
+                            <Label htmlFor="show-department" className="cursor-pointer">Show Department</Label>
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setCustomizationDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={() => saveCustomizationMutation.mutate(customization)}
+                          disabled={saveCustomizationMutation.isPending}
+                        >
+                          {saveCustomizationMutation.isPending ? (
+                            <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</>
+                          ) : (
+                            "Save Changes"
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                  {/* <Button variant="outline" onClick={handleDownload} disabled={downloading}>
                     {downloading ? (
                       <><Loader2 className="mr-2 size-4 animate-spin" /> Downloading...</>
                     ) : (
                       <><ImageIcon className="mr-2 size-4" /> Download Image</>
                     )}
-                  </Button>
+                  </Button> */}
                   <Button onClick={handlePrint}>
                     <Printer className="mr-2 size-4" /> Print
                   </Button>
@@ -228,7 +497,7 @@ export default function IdCards() {
               </div>
 
               <div id="id-card-preview" className="flex justify-center">
-                <IdCardComponent employee={selectedEmployee} companySettings={companySettings} ref={cardRef} />
+                <IdCardComponent employee={selectedEmployee} companySettings={companySettings} customization={customization} ref={cardRef} />
               </div>
             </>
           )}
@@ -239,23 +508,40 @@ export default function IdCards() {
   )
 }
 
-const IdCardComponent = React.forwardRef(({ employee, companySettings }, ref) => {
+const IdCardComponent = React.forwardRef(({ employee, companySettings, customization }, ref) => {
   const cardStyle = {
-    backgroundColor: companySettings?.id_card_background_color || '#ffffff',
-    color: companySettings?.id_card_text_color || '#000000',
-    accentColor: companySettings?.id_card_accent_color || '#2563eb',
+    backgroundColor: customization?.background_color || companySettings?.id_card_background_color || '#ffffff',
+    color: customization?.text_color || companySettings?.id_card_text_color || '#000000',
+    accentColor: customization?.accent_color || companySettings?.id_card_accent_color || '#2563eb',
+    fontFamily: customization?.font_family || 'sans-serif',
+    fontSize: customization?.font_size === 'small' ? '0.875rem' : customization?.font_size === 'large' ? '1.125rem' : '1rem',
+    qrCodeSize: customization?.qr_code_size || 90,
+    borderRadius: customization?.border_radius || 16,
+    cardWidth: customization?.card_width || 350,
+    cardHeight: customization?.card_height || 550,
+    headerHeight: customization?.header_height || 144,
+    showPhone: customization?.show_phone !== false,
+    showDepartment: customization?.show_department !== false,
   }
 
   return (
     <div 
       ref={ref}
-      className="w-[350px] h-[550px] rounded-2xl shadow-2xl overflow-hidden relative print:shadow-none print:border print:border-black"
-      style={{ backgroundColor: cardStyle.backgroundColor }}
+      className="shadow-2xl overflow-hidden relative print:shadow-none print:border print:border-black"
+      style={{ 
+        backgroundColor: cardStyle.backgroundColor,
+        fontFamily: cardStyle.fontFamily,
+        width: `${cardStyle.cardWidth}px`,
+        height: `${cardStyle.cardHeight}px`,
+        borderRadius: `${cardStyle.borderRadius}px`,
+        fontSize: cardStyle.fontSize
+      }}
     >
       {/* Decorative top pattern with company name */}
       <div 
-        className="h-36 relative overflow-hidden"
+        className="relative overflow-hidden"
         style={{ 
+          height: `${cardStyle.headerHeight}px`,
           background: `linear-gradient(135deg, ${cardStyle.accentColor} 0%, ${cardStyle.accentColor}dd 100%)`
         }}
       >
@@ -294,7 +580,7 @@ const IdCardComponent = React.forwardRef(({ employee, companySettings }, ref) =>
           <p className="text-sm font-semibold mt-1 uppercase tracking-wide" style={{ color: cardStyle.accentColor }}>
             {employee.job_title}
           </p>
-          {employee.department && (
+          {cardStyle.showDepartment && employee.department && (
             <div className="mt-2 px-3 py-1 rounded-full text-xs font-semibold" style={{ 
               backgroundColor: cardStyle.accentColor + '15', 
               color: cardStyle.accentColor 
@@ -338,7 +624,7 @@ const IdCardComponent = React.forwardRef(({ employee, companySettings }, ref) =>
             </div>
           </div>
 
-          {employee.phone && (
+          {cardStyle.showPhone && employee.phone && (
             <div className="flex items-center gap-3 text-sm">
               <div className="p-1.5 rounded-lg" style={{ backgroundColor: cardStyle.accentColor + '15' }}>
                 <Phone className="size-4" style={{ color: cardStyle.accentColor }} />
@@ -353,10 +639,10 @@ const IdCardComponent = React.forwardRef(({ employee, companySettings }, ref) =>
 
         {/* QR Code on the right */}
         <div className="flex flex-col justify-center">
-          <div className="bg-white p-3 rounded-xl shadow-lg border-2" style={{ borderColor: cardStyle.accentColor + '30' }}>
+          <div className="bg-white p-2 rounded-xl shadow-lg border-2" style={{ borderColor: cardStyle.accentColor + '30' }}>
             <QRCodeSVG 
               value="https://ramaitsolution.com/"
-              size={90}
+              size={cardStyle.qrCodeSize}
               level="H"
               includeMargin={false}
             />
