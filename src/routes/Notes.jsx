@@ -140,13 +140,24 @@ export default function Notes() {
     })
   }
 
-  // 1. Fetch all notes
-  const { data: notes = [], isLoading: notesLoading } = useQuery({
-    queryKey: ["notes"],
+  // Fetch authenticated user
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ["auth-current-user"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      return user
+    },
+  })
+
+  // 1. Fetch personal notes for the current user
+  const { data: notes = [], isLoading: notesLoading } = useQuery({
+    queryKey: ["notes", currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser?.id) return []
       const { data, error } = await supabase
         .from("notes")
         .select("*")
+        .eq("created_by", currentUser.id)
         .order("created_at", { ascending: false })
       if (error) {
         console.warn("Could not fetch notes from Supabase:", error)
@@ -154,12 +165,14 @@ export default function Notes() {
       }
       return data ?? []
     },
+    enabled: !!currentUser?.id,
   })
 
   // 2. Fetch all todos for summary cards
   const { data: allTodos = [] } = useQuery({
-    queryKey: ["all-note-todos"],
+    queryKey: ["all-note-todos", currentUser?.id],
     queryFn: async () => {
+      if (!currentUser?.id) return []
       const { data, error } = await supabase
         .from("note_todos")
         .select("*")
@@ -170,6 +183,7 @@ export default function Notes() {
       }
       return data ?? []
     },
+    enabled: !!currentUser?.id,
   })
 
   // Map todos by note_id
@@ -186,13 +200,16 @@ export default function Notes() {
   const createNoteMutation = useMutation({
     mutationFn: async (formData) => {
       const { data: { user } } = await supabase.auth.getUser()
+      if (!user?.id) {
+        throw new Error("You must be logged in to create a note.")
+      }
       const { data: newNote, error } = await supabase
         .from("notes")
         .insert({
           title: formData.title.trim(),
           content: formData.content.trim(),
           color: formData.color || "yellow",
-          created_by: user?.id || null,
+          created_by: user.id,
         })
         .select()
         .single()

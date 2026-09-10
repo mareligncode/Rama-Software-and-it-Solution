@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
@@ -13,9 +13,11 @@ import {
   Loader2, LogOut, LayoutDashboard, CheckCircle2, Clock, Calendar,
   User, Menu, Bell, TrendingUp, CheckCircle, FileText, Settings,
   Mail, Phone, MapPin, Building, Key, Save, StickyNote, Sun, Moon,
-  Download, Eye,
+  Download, Eye, MessageCircle,
 } from "lucide-react"
 import Notes from "@/routes/Notes"
+import NotificationCenter from "@/components/notifications/NotificationCenter"
+import ChatApp from "@/components/chat/ChatApp"
 import { useTheme } from "@/hooks/useTheme"
 
 export default function EmployeeDashboard() {
@@ -170,6 +172,26 @@ function Dashboard({ employee, email, userId, session }) {
   const { isDark, toggleTheme } = useTheme()
   const [editProfileOpen, setEditProfileOpen] = useState(false)
   const [changePasswordOpen, setChangePasswordOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+
+  const [readNotificationIds, setReadNotificationIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem("rama_emp_read_notifs_" + (employee?.id || userId))
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  const [dismissedNotificationIds, setDismissedNotificationIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem("rama_emp_dismissed_notifs_" + (employee?.id || userId))
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
   const [profileForm, setProfileForm] = useState({
     phone: "",
     address: "",
@@ -230,6 +252,92 @@ function Dashboard({ employee, email, userId, session }) {
     },
     enabled: !!employee?.id,
   })
+
+  // Dynamic Employee Notifications
+  const notifications = useMemo(() => {
+    const list = []
+
+    // 1. Task notifications
+    tasks?.forEach((t) => {
+      const isUrgent = t.priority === "urgent" || t.priority === "high"
+      if (t.status !== "done") {
+        list.push({
+          id: `emp-task-${t.id}`,
+          type: "task",
+          title: isUrgent ? `Urgent Task: ${t.title}` : `Assigned Task: ${t.title}`,
+          description: `Status: ${t.status?.replace("_", " ")} • Priority: ${t.priority}${t.due_date ? ` • Due: ${new Date(t.due_date).toLocaleDateString()}` : ""}`,
+          created_at: t.created_at,
+          priority: isUrgent ? "urgent" : "normal",
+          isRead: readNotificationIds.includes(`emp-task-${t.id}`),
+          actionTab: "tasks",
+          actionLabel: "View My Tasks",
+        })
+      }
+    })
+
+    // 2. Document notifications
+    employeeDocuments?.forEach((doc) => {
+      list.push({
+        id: `emp-doc-${doc.id}`,
+        type: "document",
+        title: `Document: ${doc.document_name}`,
+        description: doc.description || `Type: ${doc.document_type || "General Document"}`,
+        created_at: doc.uploaded_at || doc.created_at,
+        priority: "normal",
+        isRead: readNotificationIds.includes(`emp-doc-${doc.id}`),
+        actionTab: "documents",
+        actionLabel: "View Documents",
+      })
+    })
+
+    return list.filter((n) => !dismissedNotificationIds.includes(n.id))
+  }, [tasks, employeeDocuments, readNotificationIds, dismissedNotificationIds])
+
+  const totalUnreadNotifications = useMemo(() => {
+    return notifications.filter((n) => !readNotificationIds.includes(n.id) && !n.isRead).length
+  }, [notifications, readNotificationIds])
+
+  const handleMarkNotificationRead = (id) => {
+    setReadNotificationIds((prev) => {
+      const next = Array.from(new Set([...prev, id]))
+      try {
+        localStorage.setItem("rama_emp_read_notifs_" + (employee?.id || userId), JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }
+
+  const handleMarkAllNotificationsRead = () => {
+    const allIds = notifications.map((n) => n.id)
+    setReadNotificationIds((prev) => {
+      const next = Array.from(new Set([...prev, ...allIds]))
+      try {
+        localStorage.setItem("rama_emp_read_notifs_" + (employee?.id || userId), JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }
+
+  const handleDismissNotification = (id) => {
+    setDismissedNotificationIds((prev) => {
+      const next = Array.from(new Set([...prev, id]))
+      try {
+        localStorage.setItem("rama_emp_dismissed_notifs_" + (employee?.id || userId), JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }
+
+  const handleClearAllNotifications = () => {
+    const allIds = notifications.map((n) => n.id)
+    setDismissedNotificationIds((prev) => {
+      const next = Array.from(new Set([...prev, ...allIds]))
+      try {
+        localStorage.setItem("rama_emp_dismissed_notifs_" + (employee?.id || userId), JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }
 
   const updateTaskStatusMutation = useMutation({
     mutationFn: async ({ taskId, status }) => {
@@ -382,6 +490,8 @@ function Dashboard({ employee, email, userId, session }) {
 
         <nav className="flex-1 p-4 space-y-2">
           <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={MessageCircle} label="Team Chat" active={activeTab === "chat"} onClick={() => setActiveTab("chat")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={Bell} label="Notifications" badge={totalUnreadNotifications} active={activeTab === "notifications"} onClick={() => setActiveTab("notifications")} sidebarOpen={sidebarOpen} />
           <NavItem icon={CheckCircle2} label="My Tasks" badge={pendingTasks} active={activeTab === "tasks"} onClick={() => setActiveTab("tasks")} sidebarOpen={sidebarOpen} />
           <NavItem icon={FileText} label="Documents" active={activeTab === "documents"} onClick={() => setActiveTab("documents")} sidebarOpen={sidebarOpen} />
           <NavItem icon={StickyNote} label="Notes" active={activeTab === "notes"} onClick={() => setActiveTab("notes")} sidebarOpen={sidebarOpen} />
@@ -436,10 +546,16 @@ function Dashboard({ employee, email, userId, session }) {
               >
                 {isDark ? <Sun className="size-5 text-amber-400" /> : <Moon className="size-5 text-slate-700" />}
               </Button>
-              <Button variant="outline" size="icon" className="relative">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="relative cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+                onClick={() => setNotificationsOpen(true)}
+                title="View Notifications"
+              >
                 <Bell className="size-5" />
-                {pendingTasks > 0 && (
-                  <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">{pendingTasks}</span>
+                {totalUnreadNotifications > 0 && (
+                  <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold animate-pulse">{totalUnreadNotifications}</span>
                 )}
               </Button>
               <span className="inline-flex items-center gap-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1.5 text-xs font-medium">
@@ -486,6 +602,12 @@ function Dashboard({ employee, email, userId, session }) {
               <TabsTrigger value="dashboard" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <LayoutDashboard className="mr-2 size-4" /> Dashboard
               </TabsTrigger>
+              <TabsTrigger value="chat" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+                <MessageCircle className="mr-2 size-4" /> Team Chat
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+                <Bell className="mr-2 size-4" /> Notifications {totalUnreadNotifications > 0 && `(${totalUnreadNotifications})`}
+              </TabsTrigger>
               <TabsTrigger value="tasks" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <CheckCircle2 className="mr-2 size-4" /> My Tasks
               </TabsTrigger>
@@ -499,6 +621,27 @@ function Dashboard({ employee, email, userId, session }) {
                 <Settings className="mr-2 size-4" /> Settings
               </TabsTrigger>
             </TabsList>
+            <TabsContent value="chat" className="space-y-4">
+              <ChatApp 
+                currentUserId={userId || employee?.user_id} 
+                userEmail={email} 
+                userRole="employee" 
+                employeeData={employee} 
+              />
+            </TabsContent>
+            <TabsContent value="notifications" className="space-y-4">
+              <NotificationCenter 
+                isFullPage 
+                notifications={notifications} 
+                readIds={readNotificationIds} 
+                onMarkAsRead={handleMarkNotificationRead} 
+                onMarkAllAsRead={handleMarkAllNotificationsRead} 
+                onDismiss={handleDismissNotification} 
+                onClearAll={handleClearAllNotifications} 
+                onNavigate={(tab) => setActiveTab(tab)} 
+                userType="employee" 
+              />
+            </TabsContent>
 
             <TabsContent value="dashboard" className="space-y-4">
               <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
@@ -722,6 +865,23 @@ function Dashboard({ employee, email, userId, session }) {
           </Tabs>
         </div>
       </main>
+
+      {/* Notification Center Modal */}
+      <NotificationCenter
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        notifications={notifications}
+        readIds={readNotificationIds}
+        onMarkAsRead={handleMarkNotificationRead}
+        onMarkAllAsRead={handleMarkAllNotificationsRead}
+        onDismiss={handleDismissNotification}
+        onClearAll={handleClearAllNotifications}
+        onNavigate={(tab) => {
+          setActiveTab(tab)
+          setNotificationsOpen(false)
+        }}
+        userType="employee"
+      />
 
       {/* Edit Profile Dialog */}
       <Dialog open={editProfileOpen} onOpenChange={setEditProfileOpen}>

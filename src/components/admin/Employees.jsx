@@ -284,6 +284,8 @@ export default function Employees() {
       salary: formData.salary ? parseFloat(formData.salary) : null,
       date_of_birth: formData.date_of_birth || null,
       hire_date: formData.hire_date || null,
+      user_id: formData.user_id && formData.user_id !== "none" ? formData.user_id : null,
+      profile_image_url: formData.profile_image_url || null,
     }
 
     if (editingEmployee) {
@@ -674,12 +676,15 @@ export default function Employees() {
                   <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Dashboard Access</p>
                   <div>
                     <Label htmlFor="user_id">Link to User Account (for Employee Dashboard)</Label>
-                    <Select value={formData.user_id} onValueChange={(value) => setFormData({ ...formData, user_id: value })}>
+                    <Select 
+                      value={formData.user_id || "none"} 
+                      onValueChange={(value) => setFormData({ ...formData, user_id: value === "none" ? "" : value })}
+                    >
                       <SelectTrigger className="mt-1.5">
                         <SelectValue placeholder="Select a user account to link" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No user account linked</SelectItem>
+                        <SelectItem value="none">No user account linked</SelectItem>
                         {authUsers?.map((user) => (
                           <SelectItem key={user.id} value={user.id}>
                             {user.email} {user.email === formData.email && "(matches employee email)"}

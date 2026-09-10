@@ -168,19 +168,6 @@ export function Footer() {
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/55">
               Enterprise software, network infrastructure and cybersecurity for organisations that cannot afford downtime.
             </p>
-            <form className="mt-7 flex max-w-sm gap-2" onSubmit={(e) => e.preventDefault()}>
-              <label htmlFor="newsletter" className="sr-only">Email address</label>
-              <input
-                id="newsletter"
-                type="email"
-                required
-                placeholder="Work email"
-                className="w-full rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm text-white placeholder:text-white/40 focus:border-accent/60 focus:outline-none"
-              />
-              <button type="submit" className="shrink-0 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[oklch(0.26_0.072_263)] transition-transform hover:-translate-y-0.5">
-                Subscribe
-              </button>
-            </form>
             <div className="mt-7 flex gap-3">
               {[Linkedin, Twitter, Facebook, Youtube].map((Icon, i) => (
                 <a key={i} href="#home" aria-label="Social profile" className="grid size-10 place-items-center rounded-full border border-white/15 transition-colors hover:bg-white/10 hover:text-white">

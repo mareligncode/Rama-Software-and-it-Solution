@@ -26,6 +26,64 @@ CREATE TABLE IF NOT EXISTS public.note_todos (
 GRANT ALL ON public.notes TO authenticated, service_role;
 GRANT ALL ON public.note_todos TO authenticated, service_role;
 
+-- Enable Row Level Security (RLS) for privacy
+ALTER TABLE public.notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.note_todos ENABLE ROW LEVEL SECURITY;
+
+-- Notes RLS Policies (Personal & Private to each user)
+DROP POLICY IF EXISTS "Users can view their own notes" ON public.notes;
+CREATE POLICY "Users can view their own notes"
+  ON public.notes FOR SELECT
+  USING (auth.uid() = created_by);
+
+DROP POLICY IF EXISTS "Users can insert their own notes" ON public.notes;
+CREATE POLICY "Users can insert their own notes"
+  ON public.notes FOR INSERT
+  WITH CHECK (auth.uid() = created_by);
+
+DROP POLICY IF EXISTS "Users can update their own notes" ON public.notes;
+CREATE POLICY "Users can update their own notes"
+  ON public.notes FOR UPDATE
+  USING (auth.uid() = created_by);
+
+DROP POLICY IF EXISTS "Users can delete their own notes" ON public.notes;
+CREATE POLICY "Users can delete their own notes"
+  ON public.notes FOR DELETE
+  USING (auth.uid() = created_by);
+
+-- Note Todos RLS Policies
+DROP POLICY IF EXISTS "Users can view todos of their own notes" ON public.note_todos;
+CREATE POLICY "Users can view todos of their own notes"
+  ON public.note_todos FOR SELECT
+  USING (EXISTS (
+    SELECT 1 FROM public.notes
+    WHERE notes.id = note_todos.note_id AND notes.created_by = auth.uid()
+  ));
+
+DROP POLICY IF EXISTS "Users can insert todos to their own notes" ON public.note_todos;
+CREATE POLICY "Users can insert todos to their own notes"
+  ON public.note_todos FOR INSERT
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM public.notes
+    WHERE notes.id = note_todos.note_id AND notes.created_by = auth.uid()
+  ));
+
+DROP POLICY IF EXISTS "Users can update todos of their own notes" ON public.note_todos;
+CREATE POLICY "Users can update todos of their own notes"
+  ON public.note_todos FOR UPDATE
+  USING (EXISTS (
+    SELECT 1 FROM public.notes
+    WHERE notes.id = note_todos.note_id AND notes.created_by = auth.uid()
+  ));
+
+DROP POLICY IF EXISTS "Users can delete todos of their own notes" ON public.note_todos;
+CREATE POLICY "Users can delete todos of their own notes"
+  ON public.note_todos FOR DELETE
+  USING (EXISTS (
+    SELECT 1 FROM public.notes
+    WHERE notes.id = note_todos.note_id AND notes.created_by = auth.uid()
+  ));
+
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_notes_created_by ON public.notes(created_by);
 CREATE INDEX IF NOT EXISTS idx_notes_color ON public.notes(color);

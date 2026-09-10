@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useMemo } from "react"
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
@@ -18,11 +18,13 @@ import IdCards from "@/components/admin/IdCards"
 import Letters from "@/components/admin/Letters"
 import Plan from "@/routes/Plan"
 import Notes from "@/routes/Notes"
+import NotificationCenter from "@/components/notifications/NotificationCenter"
+import ChatApp from "@/components/chat/ChatApp"
 import {
   Mail, Phone, Trash2, LogOut, Loader2, Inbox, Newspaper, ShieldCheck,
   Search, Sparkles, Plus, Eye, EyeOff, MapPin, CalendarDays, Users,
   ChevronLeft, ChevronRight, UserPlus, ShieldOff, Upload, X, Paperclip,
-  Image, Edit, LayoutDashboard, MessageSquare, FileText, Settings, Menu,
+  Image, Edit, LayoutDashboard, MessageSquare, MessageCircle, FileText, Settings, Menu,
   Bell, TrendingUp, Clock, CheckCircle2, AlertCircle, MoreVertical,
   FolderKanban, IdCard, FileSignature, UserCircle, ClipboardList, StickyNote,
   Sun, Moon, Key, Save,
@@ -189,7 +191,26 @@ function Dashboard({ email, userId }) {
     confirmPassword: "",
   })
   const { isDark, toggleTheme } = useTheme()
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
   
+  const [readNotificationIds, setReadNotificationIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem("rama_admin_read_notifs_" + userId)
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  const [dismissedNotificationIds, setDismissedNotificationIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem("rama_admin_dismissed_notifs_" + userId)
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
   const { data: messages } = useQuery({
     queryKey: ["admin-messages"],
     queryFn: async () => {
@@ -201,6 +222,7 @@ function Dashboard({ email, userId }) {
       return data
     },
   })
+
   const { data: posts } = useQuery({
     queryKey: ["admin-posts"],
     queryFn: async () => {
@@ -209,6 +231,106 @@ function Dashboard({ email, userId }) {
       return data
     },
   })
+
+  const { data: adminTasks = [] } = useQuery({
+    queryKey: ["admin-all-tasks"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .order("created_at", { ascending: false })
+      if (error) return []
+      return data || []
+    },
+  })
+
+  // Dynamic notifications
+  const notifications = useMemo(() => {
+    const list = []
+    
+    // 1. Contact messages
+    messages?.forEach((m) => {
+      list.push({
+        id: `msg-${m.id}`,
+        type: "message",
+        title: `Message from ${m.name || "Visitor"}`,
+        description: m.subject ? `${m.subject}: ${m.message}` : m.message,
+        sender: `${m.name || "Visitor"} (${m.email || ""})`,
+        created_at: m.created_at,
+        priority: !m.is_read ? "high" : "normal",
+        isRead: m.is_read || readNotificationIds.includes(`msg-${m.id}`),
+        actionTab: "messages",
+        actionLabel: "View in Messages",
+      })
+    })
+
+    // 2. Project tasks
+    adminTasks?.forEach((t) => {
+      const isUrgent = t.priority === "urgent" || t.priority === "high"
+      if (t.status !== "done") {
+        list.push({
+          id: `task-${t.id}`,
+          type: "task",
+          title: `Task: ${t.title}`,
+          description: `Priority: ${t.priority} • Status: ${t.status?.replace("_", " ")}${t.due_date ? ` • Due: ${new Date(t.due_date).toLocaleDateString()}` : ""}`,
+          created_at: t.created_at,
+          priority: isUrgent ? "urgent" : "normal",
+          isRead: readNotificationIds.includes(`task-${t.id}`),
+          actionTab: "projects",
+          actionLabel: "View in Projects",
+        })
+      }
+    })
+
+    // Filter dismissed
+    return list.filter((n) => !dismissedNotificationIds.includes(n.id))
+  }, [messages, adminTasks, readNotificationIds, dismissedNotificationIds])
+
+  const totalUnreadNotifications = useMemo(() => {
+    return notifications.filter((n) => !readNotificationIds.includes(n.id) && !n.isRead).length
+  }, [notifications, readNotificationIds])
+
+  const handleMarkNotificationRead = (id) => {
+    setReadNotificationIds((prev) => {
+      const next = Array.from(new Set([...prev, id]))
+      try {
+        localStorage.setItem("rama_admin_read_notifs_" + userId, JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }
+
+  const handleMarkAllNotificationsRead = () => {
+    const allIds = notifications.map((n) => n.id)
+    setReadNotificationIds((prev) => {
+      const next = Array.from(new Set([...prev, ...allIds]))
+      try {
+        localStorage.setItem("rama_admin_read_notifs_" + userId, JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }
+
+  const handleDismissNotification = (id) => {
+    setDismissedNotificationIds((prev) => {
+      const next = Array.from(new Set([...prev, id]))
+      try {
+        localStorage.setItem("rama_admin_dismissed_notifs_" + userId, JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }
+
+  const handleClearAllNotifications = () => {
+    const allIds = notifications.map((n) => n.id)
+    setDismissedNotificationIds((prev) => {
+      const next = Array.from(new Set([...prev, ...allIds]))
+      try {
+        localStorage.setItem("rama_admin_dismissed_notifs_" + userId, JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }
 
   const changePasswordMutation = useMutation({
     mutationFn: async (data) => {
@@ -276,6 +398,8 @@ function Dashboard({ email, userId }) {
 
         <nav className="flex-1 p-4 space-y-2">
           <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={MessageCircle} label="Team Chat" active={activeTab === "chat"} onClick={() => setActiveTab("chat")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={Bell} label="Notifications" badge={totalUnreadNotifications} active={activeTab === "notifications"} onClick={() => setActiveTab("notifications")} sidebarOpen={sidebarOpen} />
           <NavItem icon={MessageSquare} label="Messages" badge={unread} active={activeTab === "messages"} onClick={() => setActiveTab("messages")} sidebarOpen={sidebarOpen} />
           <NavItem icon={FileText} label="Posts" active={activeTab === "posts"} onClick={() => setActiveTab("posts")} sidebarOpen={sidebarOpen} />
           <NavItem icon={Users} label="Employees" active={activeTab === "employees"} onClick={() => setActiveTab("employees")} sidebarOpen={sidebarOpen} />
@@ -331,10 +455,16 @@ function Dashboard({ email, userId }) {
               >
                 {isDark ? <Sun className="size-5 text-amber-400" /> : <Moon className="size-5 text-slate-700" />}
               </Button>
-              <Button variant="outline" size="icon" className="relative">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="relative cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+                onClick={() => setNotificationsOpen(true)}
+                title="View Notifications"
+              >
                 <Bell className="size-5" />
-                {unread > 0 && (
-                  <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">{unread}</span>
+                {totalUnreadNotifications > 0 && (
+                  <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold animate-pulse">{totalUnreadNotifications}</span>
                 )}
               </Button>
               <span className="inline-flex items-center gap-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1.5 text-xs font-medium">
@@ -383,6 +513,12 @@ function Dashboard({ email, userId }) {
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex-wrap">
+              <TabsTrigger value="chat" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+                <MessageCircle className="mr-2 size-4" /> Team Chat
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+                <Bell className="mr-2 size-4" /> Notifications {totalUnreadNotifications > 0 && `(${totalUnreadNotifications})`}
+              </TabsTrigger>
               <TabsTrigger value="messages" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
                 <MessageSquare className="mr-2 size-4" /> Messages
               </TabsTrigger>
@@ -414,6 +550,22 @@ function Dashboard({ email, userId }) {
                 <Users className="mr-2 size-4" /> Admins
               </TabsTrigger>
             </TabsList>
+            <TabsContent value="chat" className="space-y-4">
+              <ChatApp currentUserId={userId} userEmail={email} userRole="admin" />
+            </TabsContent>
+            <TabsContent value="notifications" className="space-y-4">
+              <NotificationCenter 
+                isFullPage 
+                notifications={notifications} 
+                readIds={readNotificationIds} 
+                onMarkAsRead={handleMarkNotificationRead} 
+                onMarkAllAsRead={handleMarkAllNotificationsRead} 
+                onDismiss={handleDismissNotification} 
+                onClearAll={handleClearAllNotifications} 
+                onNavigate={(tab) => setActiveTab(tab)} 
+                userType="admin" 
+              />
+            </TabsContent>
             <TabsContent value="messages" className="space-y-4"><Messages /></TabsContent>
             <TabsContent value="posts" className="space-y-4"><Posts /></TabsContent>
             <TabsContent value="employees" className="space-y-4"><Employees /></TabsContent>
@@ -455,6 +607,23 @@ function Dashboard({ email, userId }) {
           </Tabs>
         </div>
       </main>
+
+      {/* Notification Center Modal */}
+      <NotificationCenter
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        notifications={notifications}
+        readIds={readNotificationIds}
+        onMarkAsRead={handleMarkNotificationRead}
+        onMarkAllAsRead={handleMarkAllNotificationsRead}
+        onDismiss={handleDismissNotification}
+        onClearAll={handleClearAllNotifications}
+        onNavigate={(tab) => {
+          setActiveTab(tab)
+          setNotificationsOpen(false)
+        }}
+        userType="admin"
+      />
 
       {/* Change Password Dialog */}
       <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
