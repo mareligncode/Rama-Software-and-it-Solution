@@ -373,7 +373,7 @@ export default function Reports() {
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 text-white">
                 <Coins className="size-5" />
               </div>
               <div>
@@ -387,7 +387,7 @@ export default function Reports() {
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-white">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 text-white">
                 <IdCard className="size-5" />
               </div>
               <div>

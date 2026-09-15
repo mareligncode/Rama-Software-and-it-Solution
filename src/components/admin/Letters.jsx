@@ -838,7 +838,7 @@ export default function Letters() {
   const typeColors = {
     hire: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
     termination: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
-    promotion: "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300",
+    promotion: "bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300",
     warning: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
     custom: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
   }
@@ -846,7 +846,7 @@ export default function Letters() {
   return (
     <div className="space-y-6">
       {/* Top Banner Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 rounded-2xl text-white shadow-xl">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 rounded-2xl text-white shadow-xl">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">

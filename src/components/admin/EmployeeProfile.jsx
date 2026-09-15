@@ -220,17 +220,17 @@ export default function EmployeeProfile() {
                 <div className="space-y-4">
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-sm">
-                      <Briefcase className="size-4 text-purple-500" />
+                      <Briefcase className="size-4 text-indigo-500" />
                       <span className="text-slate-600 dark:text-slate-400">Department:</span>
                       <span className="font-medium">{selectedEmployee?.department || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
-                      <Calendar className="size-4 text-green-500" />
+                      <Calendar className="size-4 text-emerald-500" />
                       <span className="text-slate-600 dark:text-slate-400">Hire Date:</span>
                       <span className="font-medium">{selectedEmployee?.hire_date ? new Date(selectedEmployee.hire_date).toLocaleDateString() : 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
-                      <Calendar className="size-4 text-orange-500" />
+                      <Calendar className="size-4 text-amber-500" />
                       <span className="text-slate-600 dark:text-slate-400">Date of Birth:</span>
                       <span className="font-medium">{selectedEmployee?.date_of_birth ? new Date(selectedEmployee.date_of_birth).toLocaleDateString() : 'N/A'}</span>
                     </div>
@@ -240,10 +240,10 @@ export default function EmployeeProfile() {
                     <div className="flex items-center gap-2 mb-2">
                       <Badge className={
                         selectedEmployee?.status === "active"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0"
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0"
                           : selectedEmployee?.status === "terminated"
                           ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0"
-                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-0"
+                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0"
                       }>
                         {selectedEmployee?.status}
                       </Badge>

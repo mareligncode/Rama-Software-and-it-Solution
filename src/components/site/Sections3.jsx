@@ -5,7 +5,6 @@ import {
 import logo from "@/assets/logo.png"
 import { Reveal, SectionHeading, GlowOrb } from "./primitives"
 import { ContactForm } from "./ContactForm"
-import { Link } from "react-router-dom"
 
 const TEAM = [
   { name: "Chief Executive Officer", role: "Strategy & Client Partnership", initials: "CE" },
@@ -144,11 +143,11 @@ export function CallToAction() {
 }
 
 const FOOTER_COLS = [
-  { title: "Company", links: ["About", "Why Rama", "Our Process", "Careers", "Insights"], routes: [null, null, null, "/careers", null] },
+  { title: "Company", links: ["About", "Why Rama", "Our Process", "Careers", "Insights"], routes: [null, null, null, "#/careers", null] },
   { title: "Services", links: ["ERP Development", "Custom Software", "Cyber Security", "Cloud Solutions", "IT Consulting"], routes: [null, null, null, null, null] },
   { title: "Solutions", links: ["Finance Suite", "HR & Payroll", "Inventory & POS", "CRM & Sales", "Analytics"], routes: [null, null, null, null, null] },
   { title: "Industries", links: ["Banking", "Government", "Healthcare", "Education", "Manufacturing"], routes: [null, null, null, null, null] },
-  { title: "Resources", links: ["Case Studies", "Documentation", "Support Portal", "Privacy Policy", "Terms of Service"], routes: [null, null, null, "/privacy-policy", "/terms-of-service"] },
+  { title: "Resources", links: ["Case Studies", "Documentation", "Support Portal", "Privacy Policy", "Terms of Service"], routes: [null, null, null, "#/privacy-policy", "#/terms-of-service"] },
 ]
 
 export function Footer() {
@@ -184,16 +183,9 @@ export function Footer() {
                 <ul className="mt-5 space-y-3">
                   {col.links.map((l, i) => {
                     const route = col.routes?.[i];
-                    if (route) {
-                      return (
-                        <li key={l}>
-                          <Link to={route} className="text-sm text-white/55 transition-colors hover:text-accent">{l}</Link>
-                        </li>
-                      );
-                    }
                     return (
                       <li key={l}>
-                        <a href="#home" className="text-sm text-white/55 transition-colors hover:text-accent">{l}</a>
+                        <a href={route || "#home"} className="text-sm text-white/55 transition-colors hover:text-accent">{l}</a>
                       </li>
                     );
                   })}
@@ -223,8 +215,8 @@ export function Footer() {
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-xs text-white/45 sm:flex-row">
           <p>© {new Date().getFullYear()} Rama Software &amp; IT Solutions. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link to="/privacy-policy" className="transition-colors hover:text-white">Privacy Policy</Link>
-            <Link to="/terms-of-service" className="transition-colors hover:text-white">Terms of Service</Link>
+            <a href="#/privacy-policy" className="transition-colors hover:text-white">Privacy Policy</a>
+            <a href="#/terms-of-service" className="transition-colors hover:text-white">Terms of Service</a>
           </div>
         </div>
       </div>

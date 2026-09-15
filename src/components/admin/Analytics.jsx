@@ -247,7 +247,7 @@ export default function Analytics() {
           title="Active Projects"
           value={analytics.activeProjects}
           icon={FolderKanban}
-          color="purple"
+          color="indigo"
           trend="+2"
           trendUp={true}
         />
@@ -255,7 +255,7 @@ export default function Analytics() {
           title="Pending Tasks"
           value={analytics.pendingTasks}
           icon={Clock}
-          color="orange"
+          color="amber"
           trend="-8%"
           trendUp={false}
         />
@@ -397,9 +397,9 @@ export default function Analytics() {
 function KPICard({ title, value, icon: Icon, color, trend, trendUp }) {
   const colorClasses = {
     blue: "from-blue-500 to-indigo-500",
-    green: "from-green-500 to-emerald-500",
-    purple: "from-purple-500 to-pink-500",
-    orange: "from-orange-500 to-red-500",
+    green: "from-emerald-500 to-teal-500",
+    indigo: "from-indigo-500 to-blue-500",
+    amber: "from-amber-500 to-amber-600",
   }
 
   return (

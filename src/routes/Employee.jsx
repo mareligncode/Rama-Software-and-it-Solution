@@ -95,7 +95,7 @@ function NoAccess() {
   return (
     <Center>
       <div className="card-lux rounded-3xl border border-border bg-card/80 p-8 text-center shadow-float backdrop-blur">
-        <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-primary-foreground">
+        <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-500 text-primary-foreground">
           <User className="size-6" />
         </div>
         <h1 className="mt-5 font-display text-lg font-bold">No employee access</h1>
@@ -128,7 +128,7 @@ function AuthCard() {
   return (
     <Center>
       <div className="card-lux w-full rounded-3xl border border-border bg-card/80 p-8 shadow-float backdrop-blur">
-        <div className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-primary-foreground shadow-glow">
+        <div className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-500 text-primary-foreground shadow-glow">
           <User className="size-6" />
         </div>
         <h1 className="mt-5 font-display text-xl font-bold tracking-tight">Employee Portal</h1>
@@ -394,18 +394,18 @@ function Dashboard({ employee, email, userId, session }) {
   const completedTasks = tasks?.filter(t => t.status === 'completed').length ?? 0
 
   const statusColors = {
-    pending: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+    pending: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
     in_progress: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    completed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
     cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    review: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    review: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
   }
 
   const priorityColors = {
     low: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400",
-    medium: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+    medium: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
     high: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    urgent: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    urgent: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
   }
 
   const handleProfileSubmit = (e) => {
@@ -472,12 +472,12 @@ function Dashboard({ employee, email, userId, session }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-red-50 dark:from-slate-950 dark:via-slate-900 dark:to-red-950">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
       {/* Sidebar */}
       <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col hidden lg:flex`}>
         <div className="p-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg">
+            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-lg">
               <User className="size-5" />
             </div>
             {sidebarOpen && (
@@ -501,7 +501,7 @@ function Dashboard({ employee, email, userId, session }) {
 
         <div className="p-4 border-t border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <Avatar className="size-10 bg-gradient-to-br from-orange-500 to-red-500">
+            <Avatar className="size-10 bg-gradient-to-br from-blue-500 to-indigo-500">
               <AvatarFallback className="text-white font-semibold">
                 {employee?.first_name?.slice(0, 1) || email?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
@@ -575,11 +575,11 @@ function Dashboard({ employee, email, userId, session }) {
         <div className="flex-1 overflow-auto p-4 sm:p-6">
           {/* Stats Grid */}
           <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6 sm:mb-8">
-            <StatCard 
-              icon={CheckCircle2} 
-              label="Pending Tasks" 
-              value={pendingTasks} 
-              color="yellow"
+            <StatCard
+              icon={CheckCircle2}
+              label="Pending Tasks"
+              value={pendingTasks}
+              color="amber"
             />
             <StatCard 
               icon={Clock} 
@@ -594,10 +594,10 @@ function Dashboard({ employee, email, userId, session }) {
               color="green"
             />
             <StatCard 
-              icon={TrendingUp} 
-              label="Total Tasks" 
-              value={tasks?.length ?? 0} 
-              color="purple"
+              icon={TrendingUp}
+              label="Total Tasks"
+              value={tasks?.length ?? 0}
+              color="indigo"
             />
           </div>
 
@@ -878,7 +878,7 @@ function Dashboard({ employee, email, userId, session }) {
           <div className="absolute right-0 top-0 bottom-0 w-72 bg-white dark:bg-slate-900 shadow-xl">
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg">
+                <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-lg">
                   <User className="size-5" />
                 </div>
                 <div>
@@ -901,7 +901,7 @@ function Dashboard({ employee, email, userId, session }) {
             </nav>
             <div className="p-4 border-t border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <Avatar className="size-10 bg-gradient-to-br from-orange-500 to-red-500">
+                <Avatar className="size-10 bg-gradient-to-br from-blue-500 to-indigo-500">
                   <AvatarFallback className="text-white font-semibold">
                     {employee?.first_name?.slice(0, 1) || email?.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
@@ -1057,11 +1057,11 @@ function Dashboard({ employee, email, userId, session }) {
 
 function NavItem({ icon: Icon, label, active, badge, sidebarOpen, onClick }) {
   return (
-    <button 
+    <button
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-      active 
-        ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' 
+      active
+        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
     }`}>
       <Icon className="size-5" />
@@ -1077,10 +1077,10 @@ function NavItem({ icon: Icon, label, active, badge, sidebarOpen, onClick }) {
 
 function StatCard({ icon: Icon, label, value, color }) {
   const colorClasses = {
-    yellow: 'from-yellow-500 to-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
-    blue: 'from-blue-500 to-blue-600 bg-blue-50 dark:bg-blue-900/20',
-    green: 'from-green-500 to-green-600 bg-green-50 dark:bg-green-900/20',
-    purple: 'from-purple-500 to-purple-600 bg-purple-50 dark:bg-purple-900/20',
+    amber: 'from-amber-500 to-amber-600 bg-amber-50 dark:bg-amber-900/20',
+    blue: 'from-blue-500 to-indigo-600 bg-blue-50 dark:bg-blue-900/20',
+    green: 'from-emerald-500 to-teal-600 bg-emerald-50 dark:bg-emerald-900/20',
+    indigo: 'from-indigo-500 to-blue-600 bg-indigo-50 dark:bg-indigo-900/20',
   }
   const currentColor = colorClasses[color] || colorClasses.blue
 

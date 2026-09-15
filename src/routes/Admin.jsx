@@ -476,8 +476,8 @@ function Dashboard({ email, userId }) {
                   <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold animate-pulse">{totalUnreadNotifications}</span>
                 )}
               </Button>
-              <span className="hidden sm:inline-flex items-center gap-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1.5 text-xs font-medium">
-                <span className="size-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="hidden sm:inline-flex items-center gap-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 text-xs font-medium">
+                <span className="size-2 bg-emerald-500 rounded-full animate-pulse" />
                 Online
               </span>
             </div>
@@ -512,10 +512,10 @@ function Dashboard({ email, userId }) {
             />
             <ModernStatCard 
               icon={Users} 
-              label="Active Admins" 
-              value="3" 
-              trend="Stable" 
-              color="purple"
+              label="Active Admins"
+              value="3"
+              trend="Stable"
+              color="indigo"
             />
           </div>
 
@@ -787,10 +787,10 @@ function NavItem({ icon: Icon, label, active, badge, sidebarOpen, onClick }) {
 
 function ModernStatCard({ icon: Icon, label, value, trend, color }) {
   const colorClasses = {
-    blue: 'from-blue-500 to-blue-600 bg-blue-50 dark:bg-blue-900/20',
-    green: 'from-green-500 to-green-600 bg-green-50 dark:bg-green-900/20',
-    red: 'from-red-500 to-red-600 bg-red-50 dark:bg-red-900/20',
-    purple: 'from-purple-500 to-purple-600 bg-purple-50 dark:bg-purple-900/20',
+    blue: 'from-blue-500 to-indigo-600 bg-blue-50 dark:bg-blue-900/20',
+    green: 'from-emerald-500 to-teal-600 bg-emerald-50 dark:bg-emerald-900/20',
+    red: 'from-red-500 to-rose-600 bg-red-50 dark:bg-red-900/20',
+    indigo: 'from-indigo-500 to-blue-600 bg-indigo-50 dark:bg-indigo-900/20',
   }
   const currentColor = colorClasses[color] || colorClasses.blue
 
@@ -800,7 +800,7 @@ function ModernStatCard({ icon: Icon, label, value, trend, color }) {
         <div className={`p-3 rounded-xl bg-gradient-to-br ${currentColor.split(' ').slice(0, 2).join(' ')} text-white`}>
           <Icon className="size-5" />
         </div>
-        <div className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400">
+        <div className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
           <TrendingUp className="size-3" />
           {trend}
         </div>
@@ -1122,7 +1122,7 @@ function Admins({ currentUserId }) {
                   <div className="flex items-center gap-2">
                     <p className="font-semibold text-slate-900 dark:text-white">{a.email}</p>
                     {isSelf && (
-                      <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0">
+                      <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
                         <CheckCircle2 className="size-3 mr-1" /> You
                       </Badge>
                     )}
@@ -1540,14 +1540,14 @@ function Posts() {
                 <div className="flex items-center gap-2 mb-2">
                   <Badge className={`capitalize ${
                     p.category === 'news' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                    p.category === 'career' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                    p.category === 'internship' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
-                    'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                    p.category === 'career' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                    p.category === 'internship' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                    'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                   }`}>
                     {p.category}
                   </Badge>
                   {p.published ? (
-                    <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0">
+                    <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
                       <CheckCircle2 className="size-3 mr-1" /> Published
                     </Badge>
                   ) : (
@@ -1607,7 +1607,7 @@ function Posts() {
                   onCheckedChange={(v) => togglePublished(p.id, v)} 
                   className="data-[state=checked]:bg-blue-600"
                 />
-                <span className={`text-xs font-medium ${p.published ? "text-green-600 dark:text-green-400" : "text-slate-500 dark:text-slate-400"}`}>
+                <span className={`text-xs font-medium ${p.published ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500 dark:text-slate-400"}`}>
                   {p.published ? "Published" : "Draft"}
                 </span>
               </div>

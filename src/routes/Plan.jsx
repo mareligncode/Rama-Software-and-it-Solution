@@ -88,7 +88,7 @@ export default function Plan() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-red-50 dark:from-slate-950 dark:via-slate-900 dark:to-red-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
       <div className="container mx-auto p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
           <div>
@@ -367,13 +367,13 @@ function PlanDetail({ plan, open, onOpenChange }) {
 
   const priorityColors = {
     low: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400",
-    medium: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+    medium: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
     high: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    urgent: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    urgent: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
   }
 
   const inventoryStatusColors = {
-    available: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    available: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
     reserved: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
     used: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400",
     low_stock: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
@@ -427,8 +427,8 @@ function PlanDetail({ plan, open, onOpenChange }) {
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <span className="text-orange-600 dark:text-orange-400 font-bold text-lg">ETB</span>
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                <span className="text-amber-600 dark:text-amber-400 font-bold text-lg">ETB</span>
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalInventoryCost.toLocaleString()}</p>

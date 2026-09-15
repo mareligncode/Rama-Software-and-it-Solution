@@ -47,15 +47,15 @@ const COLOR_CONFIG = {
     accent: "text-emerald-600 dark:text-emerald-400",
     progress: "bg-emerald-500",
   },
-  purple: {
-    name: "Purple",
-    card: "bg-purple-50/90 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/60 hover:border-purple-300 dark:hover:border-purple-700",
-    header: "text-purple-900 dark:text-purple-200",
-    badge: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 border-purple-200 dark:border-purple-800",
-    swatch: "bg-purple-400 dark:bg-purple-500",
-    dot: "bg-purple-400",
-    accent: "text-purple-600 dark:text-purple-400",
-    progress: "bg-purple-500",
+  indigo: {
+    name: "Indigo",
+    card: "bg-indigo-50/90 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800/60 hover:border-indigo-300 dark:hover:border-indigo-700",
+    header: "text-indigo-900 dark:text-indigo-200",
+    badge: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
+    swatch: "bg-indigo-400 dark:bg-indigo-500",
+    dot: "bg-indigo-400",
+    accent: "text-indigo-600 dark:text-indigo-400",
+    progress: "bg-indigo-500",
   },
   red: {
     name: "Red / Coral",
@@ -67,25 +67,15 @@ const COLOR_CONFIG = {
     accent: "text-rose-600 dark:text-rose-400",
     progress: "bg-rose-500",
   },
-  orange: {
-    name: "Orange",
-    card: "bg-orange-50/90 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800/60 hover:border-orange-300 dark:hover:border-orange-700",
-    header: "text-orange-900 dark:text-orange-200",
-    badge: "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300 border-orange-200 dark:border-orange-800",
-    swatch: "bg-orange-400 dark:bg-orange-500",
-    dot: "bg-orange-400",
-    accent: "text-orange-600 dark:text-orange-400",
-    progress: "bg-orange-500",
-  },
-  pink: {
-    name: "Pink",
-    card: "bg-pink-50/90 dark:bg-pink-950/30 border-pink-200 dark:border-pink-800/60 hover:border-pink-300 dark:hover:border-pink-700",
-    header: "text-pink-900 dark:text-pink-200",
-    badge: "bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-300 border-pink-200 dark:border-pink-800",
-    swatch: "bg-pink-400 dark:bg-pink-500",
-    dot: "bg-pink-400",
-    accent: "text-pink-600 dark:text-pink-400",
-    progress: "bg-pink-500",
+  teal: {
+    name: "Teal",
+    card: "bg-teal-50/90 dark:bg-teal-950/30 border-teal-200 dark:border-teal-800/60 hover:border-teal-300 dark:hover:border-teal-700",
+    header: "text-teal-900 dark:text-teal-200",
+    badge: "bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300 border-teal-200 dark:border-teal-800",
+    swatch: "bg-teal-400 dark:bg-teal-500",
+    dot: "bg-teal-400",
+    accent: "text-teal-600 dark:text-teal-400",
+    progress: "bg-teal-500",
   },
   gray: {
     name: "Slate",
@@ -115,7 +105,7 @@ export default function Notes() {
   const [noteForm, setNoteForm] = useState({
     title: "",
     content: "",
-    color: "yellow",
+    color: "blue",
     pinned: false,
     initialTodos: "",
   })
@@ -208,7 +198,7 @@ export default function Notes() {
         .insert({
           title: formData.title.trim(),
           content: formData.content.trim(),
-          color: formData.color || "yellow",
+          color: formData.color || "blue",
           created_by: user.id,
         })
         .select()
@@ -244,7 +234,7 @@ export default function Notes() {
       qc.invalidateQueries({ queryKey: ["notes"] })
       qc.invalidateQueries({ queryKey: ["all-note-todos"] })
       setCreateNoteOpen(false)
-      setNoteForm({ title: "", content: "", color: "yellow", pinned: false, initialTodos: "" })
+      setNoteForm({ title: "", content: "", color: "blue", pinned: false, initialTodos: "" })
     },
     onError: (error) => {
       toast.error(error.message || "Failed to create note")
@@ -378,7 +368,7 @@ export default function Notes() {
         {/* Sidebar Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/20">
+            <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-md shadow-blue-500/20">
               <StickyNote className="size-5" />
             </div>
             {sidebarOpen && (
@@ -403,7 +393,7 @@ export default function Notes() {
         <div className="p-3">
           <Button
             onClick={() => setCreateNoteOpen(true)}
-            className={`w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md shadow-amber-500/25 transition-all ${
+            className={`w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-md shadow-blue-500/25 transition-all ${
               !sidebarOpen ? "p-0 justify-center" : "justify-start"
             }`}
           >
@@ -615,7 +605,7 @@ export default function Notes() {
             <Button
               size="sm"
               onClick={() => setCreateNoteOpen(true)}
-              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md shadow-amber-500/20"
+              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-md shadow-blue-500/20"
             >
               <Plus className="mr-1.5 size-4" /> Add Note
             </Button>
@@ -906,7 +896,7 @@ function SidebarNavItem({ icon: Icon, label, count, active, onClick, sidebarOpen
 // Subcomponent: Note Card (Rich Color, Checklist Preview, Actions)
 // -------------------------------------------------------------
 function NoteCard({ note, isPinned, todos, viewMode, onOpen, onDelete, onTogglePin, onCopy, onToggleTodo }) {
-  const colorCfg = COLOR_CONFIG[note.color] || COLOR_CONFIG.yellow
+  const colorCfg = COLOR_CONFIG[note.color] || COLOR_CONFIG.blue
   const completedCount = todos.filter((t) => t.completed).length
   const totalTodos = todos.length
   const progressPercent = totalTodos > 0 ? Math.round((completedCount / totalTodos) * 100) : 0
@@ -1108,7 +1098,7 @@ function NoteDetailModal({ note, open, isPinned, onOpenChange, onTogglePin, onDe
   const [editForm, setEditForm] = useState({
     title: note.title,
     content: note.content || "",
-    color: note.color || "yellow",
+    color: note.color || "blue",
   })
   const [newTodoTitle, setNewTodoTitle] = useState("")
 
@@ -1220,7 +1210,7 @@ function NoteDetailModal({ note, open, isPinned, onOpenChange, onTogglePin, onDe
 
   const completedCount = todos.filter((t) => t.completed).length
   const totalCount = todos.length
-  const colorCfg = COLOR_CONFIG[editForm.color] || COLOR_CONFIG.yellow
+  const colorCfg = COLOR_CONFIG[editForm.color] || COLOR_CONFIG.blue
 
   const handleAddTodo = (e) => {
     e.preventDefault()

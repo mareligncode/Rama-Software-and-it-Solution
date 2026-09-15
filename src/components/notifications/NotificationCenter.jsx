@@ -79,7 +79,7 @@ export default function NotificationCenter({
       case "task":
         return <CheckSquare className="size-5 text-amber-500" />
       case "document":
-        return <FileText className="size-5 text-purple-500" />
+        return <FileText className="size-5 text-indigo-500" />
       case "system":
         return <ShieldAlert className="size-5 text-indigo-500" />
       default:
@@ -94,7 +94,7 @@ export default function NotificationCenter({
       case "task":
         return <Badge variant="outline" className="bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200">Task</Badge>
       case "document":
-        return <Badge variant="outline" className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200">Document</Badge>
+        return <Badge variant="outline" className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200">Document</Badge>
       case "system":
         return <Badge variant="outline" className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200">System</Badge>
       default:

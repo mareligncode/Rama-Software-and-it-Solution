@@ -777,12 +777,12 @@ export default function Employees() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                      <Building className="size-4 text-purple-500" /> {employee.department || "-"}
+                      <Building className="size-4 text-indigo-500" /> {employee.department || "-"}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                      <Calendar className="size-4 text-green-500" /> {employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : "-"}
+                      <Calendar className="size-4 text-emerald-500" /> {employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : "-"}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -790,10 +790,10 @@ export default function Employees() {
                       variant={employee.status === "active" ? "default" : "secondary"}
                       className={
                         employee.status === "active"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0"
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0"
                           : employee.status === "terminated"
                           ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0"
-                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-0"
+                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0"
                       }
                     >
                       {employee.status === "active" && <CheckCircle2 className="size-3 mr-1" />}

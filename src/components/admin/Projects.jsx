@@ -307,9 +307,9 @@ export default function Projects() {
 
   const statusColors = {
     planning: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    on_hold: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    completed: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    on_hold: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    completed: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
     cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   }
 
@@ -322,8 +322,8 @@ export default function Projects() {
   const taskStatusColors = {
     todo: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400",
     in_progress: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    review: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    completed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    review: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
     cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   }
 
@@ -340,7 +340,7 @@ export default function Projects() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
             <FolderKanban className="size-5" />
           </div>
           <div>
@@ -367,7 +367,7 @@ export default function Projects() {
             if (!open) resetProjectForm()
           }}>
             <DialogTrigger asChild>
-              <Button className="bg-purple-600 hover:bg-purple-700">
+              <Button className="bg-indigo-600 hover:bg-indigo-700">
                 <Plus className="mr-2 size-4" /> New Project
               </Button>
             </DialogTrigger>
@@ -489,9 +489,9 @@ export default function Projects() {
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button 
-                    type="submit" 
-                    className="bg-purple-600 hover:bg-purple-700"
+                  <Button
+                    type="submit"
+                    className="bg-indigo-600 hover:bg-indigo-700"
                     disabled={createProjectMutation.isPending || updateProjectMutation.isPending}
                   >
                     {createProjectMutation.isPending || updateProjectMutation.isPending ? (
@@ -511,8 +511,8 @@ export default function Projects() {
       <div className="space-y-4">
         {filteredProjects.length === 0 ? (
           <div className="bg-white dark:bg-slate-800 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 p-12 text-center">
-            <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 flex items-center justify-center">
-              <FolderKanban className="size-10 text-purple-500" />
+            <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 flex items-center justify-center">
+              <FolderKanban className="size-10 text-blue-500" />
             </div>
             <p className="mt-4 font-semibold text-slate-900 dark:text-white">No projects found</p>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Create your first project to get started</p>
@@ -549,7 +549,7 @@ export default function Projects() {
                         </div>
                         
                         <div className="flex flex-wrap gap-3 text-sm text-slate-500 dark:text-slate-400 mb-2">
-                          <span className="flex items-center gap-1.5 font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded">
+                          <span className="flex items-center gap-1.5 font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded">
                             {project.project_code}
                           </span>
                           {project.client_name && (
@@ -559,7 +559,7 @@ export default function Projects() {
                           )}
                           {project.start_date && (
                             <span className="flex items-center gap-1.5">
-                              <Calendar className="size-4 text-green-500" /> {new Date(project.start_date).toLocaleDateString()}
+                              <Calendar className="size-4 text-emerald-500" /> {new Date(project.start_date).toLocaleDateString()}
                             </span>
                           )}
                           {project.budget && (
@@ -578,7 +578,7 @@ export default function Projects() {
                             </div>
                             <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                               <div 
-                                className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
+                                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300"
                                 style={{ width: `${progress}%` }}
                               />
                             </div>
@@ -595,7 +595,7 @@ export default function Projects() {
                       <Button size="sm" variant="outline" onClick={() => {
                         setTaskForm({ ...taskForm, project_id: project.id })
                         setTaskDialogOpen(true)
-                      }} className="bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30">
+                      }} className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30">
                         <Plus className="mr-2 size-4" /> Add Task
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => handleEditProject(project)} className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
@@ -613,11 +613,11 @@ export default function Projects() {
                   <div className="border-t border-slate-200 dark:border-slate-700 p-5 bg-slate-50 dark:bg-slate-900/30">
                     <div className="mb-4 flex items-center justify-between">
                       <h4 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
-                        <CheckCircle2 className="size-4 text-green-500" />
+                        <CheckCircle2 className="size-4 text-emerald-500" />
                         Tasks ({projectTasks.length})
                       </h4>
                       {completedTasks > 0 && (
-                        <span className="text-sm text-green-600 dark:text-green-400 font-medium">
+                        <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
                           {completedTasks} completed
                         </span>
                       )}
@@ -635,7 +635,7 @@ export default function Projects() {
                         {projectTasks.map((task) => {
                           const assignee = employees?.find(e => e.id === task.assigned_to)
                           return (
-                            <div key={task.id} className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700 transition-colors">
+                            <div key={task.id} className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -659,13 +659,13 @@ export default function Projects() {
                                       </span>
                                     )}
                                     {task.due_date && (
-                                      <span className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded">
-                                        <Calendar className="size-3.5 text-orange-500" /> {new Date(task.due_date).toLocaleDateString()}
+                                      <span className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
+                                        <Calendar className="size-3.5 text-amber-500" /> {new Date(task.due_date).toLocaleDateString()}
                                       </span>
                                     )}
                                     {task.estimated_hours && (
-                                      <span className="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded">
-                                        <Clock className="size-3.5 text-purple-500" /> {task.estimated_hours}h est.
+                                      <span className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded">
+                                        <Clock className="size-3.5 text-indigo-500" /> {task.estimated_hours}h est.
                                       </span>
                                     )}
                                   </div>
@@ -810,9 +810,9 @@ export default function Projects() {
               <Button type="button" variant="outline" onClick={() => setTaskDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                className="bg-purple-600 hover:bg-purple-700"
+              <Button
+                type="submit"
+                className="bg-indigo-600 hover:bg-indigo-700"
                 disabled={createTaskMutation.isPending || updateTaskMutation.isPending}
               >
                 {createTaskMutation.isPending || updateTaskMutation.isPending ? (

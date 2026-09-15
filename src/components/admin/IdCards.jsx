@@ -199,7 +199,7 @@ export default function IdCards() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-teal-500 text-white">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
             <IdCard className="size-5" />
           </div>
           <div>
