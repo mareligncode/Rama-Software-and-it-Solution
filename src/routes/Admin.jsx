@@ -18,6 +18,8 @@ import IdCards from "@/components/admin/IdCards"
 import Letters from "@/components/admin/Letters"
 import Plan from "@/routes/Plan"
 import Notes from "@/routes/Notes"
+import Analytics from "@/components/admin/Analytics"
+import Reports from "@/components/admin/Reports"
 import NotificationCenter from "@/components/notifications/NotificationCenter"
 import ChatApp from "@/components/chat/ChatApp"
 import {
@@ -412,6 +414,8 @@ function Dashboard({ email, userId }) {
           <NavItem icon={StickyNote} label="Notes" active={activeTab === "notes"} onClick={() => setActiveTab("notes")} sidebarOpen={sidebarOpen} />
           <NavItem icon={Users} label="Admins" active={activeTab === "admins"} onClick={() => setActiveTab("admins")} sidebarOpen={sidebarOpen} />
           <NavItem icon={Settings} label="Settings" active={activeTab === "settings"} onClick={() => setActiveTab("settings")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={TrendingUp} label="Analytics" active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={FileText} label="Reports" active={activeTab === "reports"} onClick={() => setActiveTab("reports")} sidebarOpen={sidebarOpen} />
         </nav>
 
         <div className="p-4 border-t border-slate-200 dark:border-slate-800">
@@ -554,6 +558,12 @@ function Dashboard({ email, userId }) {
               <TabsTrigger value="admins" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <Users className="mr-2 size-4" /> Admins
               </TabsTrigger>
+              <TabsTrigger value="analytics" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+                <TrendingUp className="mr-2 size-4" /> Analytics
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+                <FileText className="mr-2 size-4" /> Reports
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="chat" className="space-y-4">
               <ChatApp currentUserId={userId} userEmail={email} userRole="admin" />
@@ -608,6 +618,12 @@ function Dashboard({ email, userId }) {
                   </div>
                 </div>
               </div>
+            </TabsContent>
+            <TabsContent value="analytics" className="space-y-4">
+              <Analytics />
+            </TabsContent>
+            <TabsContent value="reports" className="space-y-4">
+              <Reports />
             </TabsContent>
           </Tabs>
         </div>
@@ -664,6 +680,8 @@ function Dashboard({ email, userId }) {
               <NavItem icon={StickyNote} label="Notes" active={activeTab === "notes"} onClick={() => { setActiveTab("notes"); setMobileMenuOpen(false); }} sidebarOpen={true} />
               <NavItem icon={Users} label="Admins" active={activeTab === "admins"} onClick={() => { setActiveTab("admins"); setMobileMenuOpen(false); }} sidebarOpen={true} />
               <NavItem icon={Settings} label="Settings" active={activeTab === "settings"} onClick={() => { setActiveTab("settings"); setMobileMenuOpen(false); }} sidebarOpen={true} />
+              <NavItem icon={TrendingUp} label="Analytics" active={activeTab === "analytics"} onClick={() => { setActiveTab("analytics"); setMobileMenuOpen(false); }} sidebarOpen={true} />
+              <NavItem icon={FileText} label="Reports" active={activeTab === "reports"} onClick={() => { setActiveTab("reports"); setMobileMenuOpen(false); }} sidebarOpen={true} />
             </nav>
             <div className="p-4 border-t border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-3">
