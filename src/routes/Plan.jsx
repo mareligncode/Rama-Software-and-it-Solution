@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import {
-  Loader2, Plus, Calendar, CheckCircle2, Clock, Package, DollarSign,
+  Loader2, Plus, Calendar, CheckCircle2, Clock, Package,
   TrendingUp, FileText, Settings, X, Edit2, Trash2,
 } from "lucide-react"
 
@@ -89,10 +89,10 @@ export default function Plan() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-red-50 dark:from-slate-950 dark:via-slate-900 dark:to-red-950">
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="container mx-auto p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Plan Management</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Plan Management</h1>
             <p className="text-slate-500 dark:text-slate-400">Manage your daily, monthly, yearly, and custom plans</p>
           </div>
           <Button onClick={() => setCreatePlanOpen(true)}>
@@ -128,7 +128,7 @@ export default function Plan() {
                 <p className="text-slate-500 dark:text-slate-400">Create your first {activeTab} plan to get started.</p>
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {plans.map((plan) => (
                   <div key={plan.id} className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow cursor-pointer" onClick={() => openPlanDetail(plan)}>
                     <div className="flex items-start justify-between mb-2">
@@ -161,7 +161,7 @@ export default function Plan() {
 
         {/* Create Plan Dialog */}
         <Dialog open={createPlanOpen} onOpenChange={setCreatePlanOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md w-[95vw] sm:w-full">
             <DialogHeader>
               <DialogTitle>Create {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Plan</DialogTitle>
             </DialogHeader>
@@ -386,7 +386,7 @@ function PlanDetail({ plan, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
         <DialogHeader>
           <div className="flex items-start justify-between">
             <div>
@@ -428,10 +428,10 @@ function PlanDetail({ plan, open, onOpenChange }) {
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <DollarSign className="size-5 text-orange-600 dark:text-orange-400" />
+                <span className="text-orange-600 dark:text-orange-400 font-bold text-lg">ETB</span>
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">${totalInventoryCost.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalInventoryCost.toLocaleString()}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">Total Cost</p>
               </div>
             </div>
@@ -569,7 +569,7 @@ function PlanDetail({ plan, open, onOpenChange }) {
 
         {/* Create Todo Dialog */}
         <Dialog open={createTodoOpen} onOpenChange={setCreateTodoOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md w-[95vw] sm:w-full">
             <DialogHeader>
               <DialogTitle>Add Todo</DialogTitle>
             </DialogHeader>
@@ -638,7 +638,7 @@ function PlanDetail({ plan, open, onOpenChange }) {
 
         {/* Create Inventory Dialog */}
         <Dialog open={createInventoryOpen} onOpenChange={setCreateInventoryOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md w-[95vw] sm:w-full">
             <DialogHeader>
               <DialogTitle>Add Inventory Item</DialogTitle>
             </DialogHeader>

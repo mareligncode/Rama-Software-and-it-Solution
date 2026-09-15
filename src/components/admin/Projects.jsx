@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   FolderKanban, Plus, Edit, Trash2, Search, Loader2, 
-  Calendar, DollarSign, Building2, CheckCircle2, Clock, 
+  Calendar, Building2, CheckCircle2, Clock, 
   AlertCircle, MoreVertical, ChevronDown, ChevronRight
 } from "lucide-react"
 
@@ -338,7 +338,7 @@ export default function Projects() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white">
             <FolderKanban className="size-5" />
@@ -351,14 +351,14 @@ export default function Projects() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-none">
             <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search projects..."
-              className="pl-10 h-10 w-64 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+              className="pl-10 h-10 w-full sm:w-64 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
           </div>
 
@@ -371,7 +371,7 @@ export default function Projects() {
                 <Plus className="mr-2 size-4" /> New Project
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
               <DialogHeader>
                 <DialogTitle>{editingProject ? "Edit Project" : "Create New Project"}</DialogTitle>
               </DialogHeader>
@@ -564,7 +564,7 @@ export default function Projects() {
                           )}
                           {project.budget && (
                             <span className="flex items-center gap-1.5">
-                              <DollarSign className="size-4 text-emerald-500" /> {project.budget.toLocaleString()}
+                              <span className="text-emerald-500 font-semibold">ETB</span> {project.budget.toLocaleString()}
                             </span>
                           )}
                         </div>
@@ -698,7 +698,7 @@ export default function Projects() {
         setTaskDialogOpen(open)
         if (!open) resetTaskForm()
       }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
             <DialogTitle>{editingTask ? "Edit Task" : "Create New Task"}</DialogTitle>
           </DialogHeader>

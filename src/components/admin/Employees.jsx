@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   Users, Plus, Edit, Trash2, Search, Upload, X, Loader2, 
-  Mail, Phone, MapPin, Calendar, Building, DollarSign, 
+  Mail, Phone, MapPin, Calendar, Building, 
   User, Briefcase, AlertCircle, CheckCircle2, FileText,
   Download, FolderOpen, Eye
 } from "lucide-react"
@@ -418,7 +418,7 @@ export default function Employees() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
             <Users className="size-5" />
@@ -431,14 +431,14 @@ export default function Employees() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-none">
             <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search employees..."
-              className="pl-10 h-10 w-64 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+              className="pl-10 h-10 w-full sm:w-64 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
           </div>
 
@@ -451,7 +451,7 @@ export default function Employees() {
                 <Plus className="mr-2 size-4" /> Add Employee
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
               <DialogHeader>
                 <DialogTitle>{editingEmployee ? "Edit Employee" : "Add New Employee"}</DialogTitle>
               </DialogHeader>
@@ -722,6 +722,7 @@ export default function Employees() {
 
       {/* Employees Table */}
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
             <TableRow>
@@ -829,6 +830,7 @@ export default function Employees() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Documents Dialog */}

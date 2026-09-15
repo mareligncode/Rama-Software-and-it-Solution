@@ -13,7 +13,7 @@ import {
   Loader2, LogOut, LayoutDashboard, CheckCircle2, Clock, Calendar,
   User, Menu, Bell, TrendingUp, CheckCircle, FileText, Settings,
   Mail, Phone, MapPin, Building, Key, Save, StickyNote, Sun, Moon,
-  Download, Eye, MessageCircle,
+  Download, Eye, MessageCircle, X,
 } from "lucide-react"
 import Notes from "@/routes/Notes"
 import NotificationCenter from "@/components/notifications/NotificationCenter"
@@ -168,6 +168,7 @@ function AuthCard() {
 function Dashboard({ employee, email, userId, session }) {
   const qc = useQueryClient()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("dashboard")
   const { isDark, toggleTheme } = useTheme()
   const [editProfileOpen, setEditProfileOpen] = useState(false)
@@ -473,7 +474,7 @@ function Dashboard({ employee, email, userId, session }) {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-red-50 dark:from-slate-950 dark:via-slate-900 dark:to-red-950">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col`}>
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col hidden lg:flex`}>
         <div className="p-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg">
@@ -523,26 +524,30 @@ function Dashboard({ employee, email, userId, session }) {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+        <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
+              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)} className="hidden lg:flex">
+                <Menu className="size-5" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden">
                 <Menu className="size-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">
                   Welcome back, {employee?.first_name}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={toggleTheme}
                 title={isDark ? "Switch to light mode" : "Switch to dark mode"}
                 aria-label="Toggle dark mode"
+                className="hidden sm:flex"
               >
                 {isDark ? <Sun className="size-5 text-amber-400" /> : <Moon className="size-5 text-slate-700" />}
               </Button>
@@ -558,7 +563,7 @@ function Dashboard({ employee, email, userId, session }) {
                   <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold animate-pulse">{totalUnreadNotifications}</span>
                 )}
               </Button>
-              <span className="inline-flex items-center gap-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1.5 text-xs font-medium">
+              <span className="hidden sm:inline-flex items-center gap-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1.5 text-xs font-medium">
                 <span className="size-2 bg-green-500 rounded-full animate-pulse" />
                 Online
               </span>
@@ -567,9 +572,9 @@ function Dashboard({ employee, email, userId, session }) {
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4 sm:p-6">
           {/* Stats Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6 sm:mb-8">
             <StatCard 
               icon={CheckCircle2} 
               label="Pending Tasks" 
@@ -598,26 +603,26 @@ function Dashboard({ employee, email, userId, session }) {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex-wrap">
-              <TabsTrigger value="dashboard" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+            <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex-wrap overflow-x-auto">
+              <TabsTrigger value="dashboard" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <LayoutDashboard className="mr-2 size-4" /> Dashboard
               </TabsTrigger>
-              <TabsTrigger value="chat" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="chat" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <MessageCircle className="mr-2 size-4" /> Team Chat
               </TabsTrigger>
-              <TabsTrigger value="notifications" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="notifications" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <Bell className="mr-2 size-4" /> Notifications {totalUnreadNotifications > 0 && `(${totalUnreadNotifications})`}
               </TabsTrigger>
-              <TabsTrigger value="tasks" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="tasks" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <CheckCircle2 className="mr-2 size-4" /> My Tasks
               </TabsTrigger>
-              <TabsTrigger value="documents" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="documents" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <FileText className="mr-2 size-4" /> Documents
               </TabsTrigger>
-              <TabsTrigger value="notes" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="notes" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <StickyNote className="mr-2 size-4" /> Notes
               </TabsTrigger>
-              <TabsTrigger value="settings" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="settings" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <Settings className="mr-2 size-4" /> Settings
               </TabsTrigger>
             </TabsList>
@@ -866,6 +871,56 @@ function Dashboard({ employee, email, userId, session }) {
         </div>
       </main>
 
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
+          <div className="absolute right-0 top-0 bottom-0 w-72 bg-white dark:bg-slate-900 shadow-xl">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg">
+                  <User className="size-5" />
+                </div>
+                <div>
+                  <p className="font-display text-sm font-bold leading-tight text-slate-900 dark:text-white">Employee Portal</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Dashboard</p>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
+                <X className="size-5" />
+              </Button>
+            </div>
+            <nav className="p-4 space-y-2">
+              <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === "dashboard"} onClick={() => { setActiveTab("dashboard"); setMobileMenuOpen(false); }} sidebarOpen={true} />
+              <NavItem icon={MessageCircle} label="Team Chat" active={activeTab === "chat"} onClick={() => { setActiveTab("chat"); setMobileMenuOpen(false); }} sidebarOpen={true} />
+              <NavItem icon={Bell} label="Notifications" badge={totalUnreadNotifications} active={activeTab === "notifications"} onClick={() => { setActiveTab("notifications"); setMobileMenuOpen(false); }} sidebarOpen={true} />
+              <NavItem icon={CheckCircle2} label="My Tasks" badge={pendingTasks} active={activeTab === "tasks"} onClick={() => { setActiveTab("tasks"); setMobileMenuOpen(false); }} sidebarOpen={true} />
+              <NavItem icon={FileText} label="Documents" active={activeTab === "documents"} onClick={() => { setActiveTab("documents"); setMobileMenuOpen(false); }} sidebarOpen={true} />
+              <NavItem icon={StickyNote} label="Notes" active={activeTab === "notes"} onClick={() => { setActiveTab("notes"); setMobileMenuOpen(false); }} sidebarOpen={true} />
+              <NavItem icon={Settings} label="Settings" active={activeTab === "settings"} onClick={() => { setActiveTab("settings"); setMobileMenuOpen(false); }} sidebarOpen={true} />
+            </nav>
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <Avatar className="size-10 bg-gradient-to-br from-orange-500 to-red-500">
+                  <AvatarFallback className="text-white font-semibold">
+                    {employee?.first_name?.slice(0, 1) || email?.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                    {employee?.first_name} {employee?.last_name}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{employee?.job_title || 'Employee'}</p>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={signOut}>
+                  <LogOut className="size-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Notification Center Modal */}
       <NotificationCenter
         isOpen={notificationsOpen}
@@ -885,7 +940,7 @@ function Dashboard({ employee, email, userId, session }) {
 
       {/* Edit Profile Dialog */}
       <Dialog open={editProfileOpen} onOpenChange={setEditProfileOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md w-[95vw] sm:w-full">
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
           </DialogHeader>
@@ -938,7 +993,7 @@ function Dashboard({ employee, email, userId, session }) {
 
       {/* Change Password Dialog */}
       <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md w-[95vw] sm:w-full">
           <DialogHeader>
             <DialogTitle>Change Password</DialogTitle>
           </DialogHeader>
