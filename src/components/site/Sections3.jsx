@@ -200,6 +200,8 @@ export function Footer() {
             { icon: MapPin, label: "Head Office", value: "Bole Road, Addis Ababa, Ethiopia" },
             { icon: Mail, label: "Email", value: "girmawibelay@gmail.com" },
             { icon: Phone, label: "Phone", value: "0914554432" },
+                        { icon: Phone, label: "Phone", value: "905329932" },
+            { icon: Phone, label: "Phone", value: "941063306" },
             { icon: Globe, label: "Website", value: "www.ramaitsolution.com" },
           ].map((c) => (
             <div key={c.label} className="flex items-start gap-3">

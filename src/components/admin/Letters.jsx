@@ -1786,13 +1786,8 @@ function ExecutiveLetterhead({ template, content, companySettings }) {
           <div className="w-56 text-left space-y-1">
             <p className="text-xs font-semibold text-slate-800">Sincerely,</p>
             
-            {/* Realistic Stylized Signature Graphic */}
-            <div className="h-12 py-1">
-              <svg viewBox="0 0 160 45" className="h-full w-auto text-slate-800 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 32 C25 15, 30 10, 45 28 C55 38, 65 12, 75 25 C85 35, 95 18, 110 30 C125 40, 135 20, 150 25" />
-                <path d="M35 22 L85 18" strokeWidth="1.5" />
-              </svg>
-            </div>
+            {/* Space for manual signature */}
+            <div className="h-12" />
 
             <div className="border-t border-slate-300 pt-1.5">
               <p className="text-xs font-bold text-slate-900 leading-tight">{signerName}</p>
