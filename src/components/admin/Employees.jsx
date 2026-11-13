@@ -19,6 +19,46 @@ import {
   Download, FolderOpen, Eye
 } from "lucide-react"
 
+// Helper to generate auto-incrementing Employee ID with "RAMA-" prefix
+export function getNextEmployeeId(existingEmployees = []) {
+  let maxSeq = 0
+  let allEmps = Array.isArray(existingEmployees) ? [...existingEmployees] : []
+  try {
+    const local = localStorage.getItem("rama_employees")
+    if (local) {
+      const parsed = JSON.parse(local)
+      if (Array.isArray(parsed)) {
+        allEmps = [...allEmps, ...parsed]
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  allEmps.forEach((e) => {
+    const id = (e?.employee_id || "").trim()
+    if (!id) return
+    const match = id.match(/RAMA-(?:EMP-)?(\d+)/i)
+    if (match && match[1]) {
+      const num = parseInt(match[1], 10)
+      if (!isNaN(num) && num > maxSeq) maxSeq = num
+      return
+    }
+    const numDirect = id.match(/(\d+)/)
+    if (numDirect && numDirect[1]) {
+      const num = parseInt(numDirect[1], 10)
+      if (!isNaN(num) && num > maxSeq && num < 1000) maxSeq = num
+    }
+  })
+
+  if (maxSeq === 0 && allEmps.length > 0) {
+    maxSeq = allEmps.length
+  }
+
+  const nextSeq = maxSeq + 1
+  return `RAMA-EMP-${String(nextSeq).padStart(3, "0")}`
+}
+
 export default function Employees() {
   const qc = useQueryClient()
   const [search, setSearch] = useState("")
@@ -255,7 +295,7 @@ export default function Employees() {
 
   function resetForm() {
     setFormData({
-      employee_id: "",
+      employee_id: getNextEmployeeId(employees),
       first_name: "",
       last_name: "",
       email: "",
@@ -279,8 +319,10 @@ export default function Employees() {
 
   function handleSubmit(e) {
     e.preventDefault()
+    const finalEmpId = (formData.employee_id || "").trim() || (!editingEmployee ? getNextEmployeeId(employees) : "")
     const payload = {
       ...formData,
+      employee_id: finalEmpId,
       salary: formData.salary ? parseFloat(formData.salary) : null,
       date_of_birth: formData.date_of_birth || null,
       hire_date: formData.hire_date || null,
@@ -458,13 +500,25 @@ export default function Employees() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="employee_id">Employee ID</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="employee_id">Employee ID</Label>
+                      {!editingEmployee && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, employee_id: getNextEmployeeId(employees) }))}
+                          className="text-[10px] text-blue-600 hover:text-blue-800 font-semibold"
+                          title="Generate auto-incremented ID"
+                        >
+                          Auto: RAMA-
+                        </button>
+                      )}
+                    </div>
                     <Input
                       id="employee_id"
                       value={formData.employee_id}
                       onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
-                      placeholder="EMP001"
-                      className="mt-1.5"
+                      placeholder="e.g. RAMA-EMP-001"
+                      className="mt-1.5 font-mono font-semibold text-xs"
                     />
                   </div>
                   <div>

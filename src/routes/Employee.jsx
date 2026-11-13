@@ -13,12 +13,13 @@ import {
   Loader2, LogOut, LayoutDashboard, CheckCircle2, Clock, Calendar,
   User, Menu, Bell, TrendingUp, CheckCircle, FileText, Settings,
   Mail, Phone, MapPin, Building, Key, Save, StickyNote, Sun, Moon,
-  Download, Eye, MessageCircle, X,
+  Download, Eye, MessageCircle, X, Coins, Printer, Award, ShieldCheck,
 } from "lucide-react"
 import Notes from "@/routes/Notes"
 import NotificationCenter from "@/components/notifications/NotificationCenter"
 import ChatApp from "@/components/chat/ChatApp"
 import { useTheme } from "@/hooks/useTheme"
+import { formatCurrency, MONTHS, generatePayslipPDF } from "@/lib/payrollUtils"
 
 export default function EmployeeDashboard() {
   const [session, setSession] = useState(null)
@@ -249,6 +250,70 @@ function Dashboard({ employee, email, userId, session }) {
       } catch (err) {
         console.error("Document fetch error:", err)
         return []
+      }
+    },
+    enabled: !!employee?.id,
+  })
+
+  // Employee Salary Payments History
+  const { data: mySalaries = [], isLoading: salariesLoading } = useQuery({
+    queryKey: ["employee-my-salaries", employee?.id],
+    queryFn: async () => {
+      if (!employee?.id) return []
+      try {
+        const { data, error } = await supabase
+          .from("salary_payments")
+          .select("*")
+          .eq("employee_id", employee.id)
+          .order("year", { ascending: false })
+          .order("month", { ascending: false })
+        if (error) throw error
+        return data || []
+      } catch (err) {
+        const local = JSON.parse(localStorage.getItem("rama_salary_payments") || "[]")
+        return local.filter((p) => p.employee_id === employee.id)
+      }
+    },
+    enabled: !!employee?.id,
+  })
+
+  // Employee Overtime Log
+  const { data: myOvertime = [] } = useQuery({
+    queryKey: ["employee-my-overtime", employee?.id],
+    queryFn: async () => {
+      if (!employee?.id) return []
+      try {
+        const { data, error } = await supabase
+          .from("employee_overtime")
+          .select("*")
+          .eq("employee_id", employee.id)
+          .order("date", { ascending: false })
+        if (error) throw error
+        return data || []
+      } catch (err) {
+        const local = JSON.parse(localStorage.getItem("rama_employee_overtime") || "[]")
+        return local.filter((o) => o.employee_id === employee.id)
+      }
+    },
+    enabled: !!employee?.id,
+  })
+
+  // Employee Commissions Log
+  const { data: myCommissions = [] } = useQuery({
+    queryKey: ["employee-my-commissions", employee?.id],
+    queryFn: async () => {
+      if (!employee?.id) return []
+      try {
+        const { data, error } = await supabase
+          .from("employee_commissions")
+          .select("*")
+          .eq("employee_id", employee.id)
+          .order("earned_date", { ascending: false })
+        if (error) throw error
+        return data || []
+      } catch (err) {
+        const local = JSON.parse(localStorage.getItem("rama_employee_commissions") || "[]")
+        return local.filter((c) => c.employee_id === employee.id)
       }
     },
     enabled: !!employee?.id,
@@ -619,6 +684,9 @@ function Dashboard({ employee, email, userId, session }) {
               <TabsTrigger value="documents" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <FileText className="mr-2 size-4" /> Documents
               </TabsTrigger>
+              <TabsTrigger value="salary" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+                <Coins className="mr-2 size-4" /> My Salary & Payslips
+              </TabsTrigger>
               <TabsTrigger value="notes" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <StickyNote className="mr-2 size-4" /> Notes
               </TabsTrigger>
@@ -802,6 +870,240 @@ function Dashboard({ employee, email, userId, session }) {
                     ))}
                   </div>
                 )}
+              </div>
+            </TabsContent>
+
+            {/* My Salary & Payslips Tab Content */}
+            <TabsContent value="salary" className="space-y-6">
+              {/* Summary Metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-xs">
+                  <div className="flex items-center justify-between text-slate-500 text-xs">
+                    <span>Base Contract Salary</span>
+                    <Coins className="size-4 text-indigo-500" />
+                  </div>
+                  <p className="text-xl font-bold font-mono text-slate-900 dark:text-white mt-1">
+                    {formatCurrency(employee?.salary || 0)}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">Per employment contract</p>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-emerald-200 dark:border-emerald-800 shadow-xs">
+                  <div className="flex items-center justify-between text-emerald-600 text-xs">
+                    <span>Total Paid Out</span>
+                    <CheckCircle2 className="size-4" />
+                  </div>
+                  <p className="text-xl font-bold font-mono text-emerald-600 mt-1">
+                    {formatCurrency(
+                      mySalaries
+                        .filter((s) => s.payment_status === "paid")
+                        .reduce((acc, s) => acc + (Number(s.net_salary) || 0), 0)
+                    )}
+                  </p>
+                  <p className="text-xs text-emerald-600/80 mt-1">
+                    {mySalaries.filter((s) => s.payment_status === "paid").length} settled pay slips
+                  </p>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-amber-200 dark:border-amber-800 shadow-xs">
+                  <div className="flex items-center justify-between text-amber-600 text-xs">
+                    <span>Pending / Unpaid Slips</span>
+                    <Clock className="size-4" />
+                  </div>
+                  <p className="text-xl font-bold font-mono text-amber-600 mt-1">
+                    {mySalaries.filter((s) => s.payment_status !== "paid").length} Vouchers
+                  </p>
+                  <p className="text-xs text-amber-600/80 mt-1">Under processing by Finance</p>
+                </div>
+              </div>
+
+              {/* Salary Payments Table */}
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xs">
+                <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">My Salary Payment History</h3>
+                    <p className="text-xs text-slate-500">Official monthly salary vouchers and payment records.</p>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-50 dark:bg-slate-900/50 text-[11px] uppercase font-semibold text-slate-500">
+                      <tr>
+                        <th className="p-3">Period</th>
+                        <th className="p-3">Payment Date</th>
+                        <th className="p-3 text-right">Basic</th>
+                        <th className="p-3 text-right">Overtime</th>
+                        <th className="p-3 text-right">Commission</th>
+                        <th className="p-3 text-right">Gross</th>
+                        <th className="p-3 text-right">Deductions</th>
+                        <th className="p-3 text-right font-bold text-slate-900 dark:text-white">Net Pay</th>
+                        <th className="p-3 text-center">Status</th>
+                        <th className="p-3 text-right">Payslip</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                      {salariesLoading ? (
+                        <tr>
+                          <td colSpan={10} className="p-8 text-center text-slate-400">
+                            <Loader2 className="size-5 animate-spin mx-auto mb-2 text-indigo-500" />
+                            Loading salary records...
+                          </td>
+                        </tr>
+                      ) : mySalaries.length === 0 ? (
+                        <tr>
+                          <td colSpan={10} className="p-8 text-center text-slate-400">
+                            No salary slips recorded for your profile yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        mySalaries.map((s) => {
+                          const mName = MONTHS.find((m) => m.value === s.month)?.name || `Month ${s.month}`
+                          const isPaid = s.payment_status === "paid"
+
+                          return (
+                            <tr key={s.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50">
+                              <td className="p-3 font-semibold text-slate-900 dark:text-white">
+                                {mName} {s.year}
+                              </td>
+                              <td className="p-3 text-slate-500">{s.payment_date || "N/A"}</td>
+                              <td className="p-3 text-right font-mono">{formatCurrency(s.basic_salary)}</td>
+                              <td className="p-3 text-right font-mono text-blue-600">
+                                {Number(s.overtime_amount) > 0 ? `+${formatCurrency(s.overtime_amount)}` : "-"}
+                              </td>
+                              <td className="p-3 text-right font-mono text-emerald-600">
+                                {Number(s.commission_amount) > 0 ? `+${formatCurrency(s.commission_amount)}` : "-"}
+                              </td>
+                              <td className="p-3 text-right font-mono text-slate-700 dark:text-slate-300">
+                                {formatCurrency(s.gross_salary)}
+                              </td>
+                              <td className="p-3 text-right font-mono text-rose-500">
+                                -{formatCurrency(s.total_deductions)}
+                              </td>
+                              <td className="p-3 text-right font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400">
+                                {formatCurrency(s.net_salary)}
+                              </td>
+                              <td className="p-3 text-center">
+                                {isPaid ? (
+                                  <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300">
+                                    <CheckCircle2 className="size-3 mr-1" /> PAID
+                                  </Badge>
+                                ) : s.payment_status === "pending" ? (
+                                  <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300">
+                                    <Clock className="size-3 mr-1" /> PENDING
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border-rose-300">
+                                    <AlertCircle className="size-3 mr-1" /> UNPAID
+                                  </Badge>
+                                )}
+                              </td>
+                              <td className="p-3 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <a
+                                    href={`/#/verify?id=${encodeURIComponent(s.id || "")}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 px-2 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                      title="Open Official Verification Page"
+                                    >
+                                      <ShieldCheck className="mr-1 size-3.5" /> Verify
+                                    </Button>
+                                  </a>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 px-2.5 text-xs text-indigo-600 hover:text-indigo-700"
+                                    onClick={() =>
+                                      generatePayslipPDF({
+                                        payment: s,
+                                        employee: employee,
+                                        companySettings: { currency: "ETB" },
+                                      })
+                                    }
+                                  >
+                                    <Download className="mr-1 size-3.5" /> PDF Slip
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Overtime & Commissions Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Overtime Summary */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <Clock className="size-4 text-blue-500" />
+                      My Recorded Overtime ({myOvertime.length})
+                    </h4>
+                    <span className="text-xs text-slate-400">Total Approved</span>
+                  </div>
+                  {myOvertime.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-4 text-center">No overtime recorded yet.</p>
+                  ) : (
+                    <div className="divide-y divide-slate-100 dark:divide-slate-700/60 max-h-56 overflow-y-auto">
+                      {myOvertime.slice(0, 6).map((ot) => (
+                        <div key={ot.id} className="py-2 flex items-center justify-between text-xs">
+                          <div>
+                            <span className="font-medium capitalize text-slate-800 dark:text-slate-200">
+                              {ot.overtime_type} Overtime
+                            </span>
+                            <p className="text-[11px] text-slate-400">{ot.date} • {ot.hours} hours ({ot.multiplier}x)</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-mono font-bold text-blue-600">
+                              {formatCurrency(ot.calculated_amount)}
+                            </span>
+                            <Badge className="ml-2 text-[10px] capitalize" variant="outline">{ot.status}</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Commissions Summary */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <Award className="size-4 text-emerald-500" />
+                      My Commissions ({myCommissions.length})
+                    </h4>
+                    <span className="text-xs text-slate-400">Deals & Incentives</span>
+                  </div>
+                  {myCommissions.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-4 text-center">No commissions earned yet.</p>
+                  ) : (
+                    <div className="divide-y divide-slate-100 dark:divide-slate-700/60 max-h-56 overflow-y-auto">
+                      {myCommissions.slice(0, 6).map((c) => (
+                        <div key={c.id} className="py-2 flex items-center justify-between text-xs">
+                          <div>
+                            <span className="font-medium text-slate-800 dark:text-slate-200">{c.title}</span>
+                            <p className="text-[11px] text-slate-400">{c.earned_date}</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-mono font-bold text-emerald-600">
+                              {formatCurrency(c.commission_amount)}
+                            </span>
+                            <Badge className="ml-2 text-[10px] capitalize" variant="outline">{c.status}</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </TabsContent>
 

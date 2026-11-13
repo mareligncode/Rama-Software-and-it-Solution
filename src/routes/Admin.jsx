@@ -16,6 +16,7 @@ import EmployeeProfile from "@/components/admin/EmployeeProfile"
 import Projects from "@/components/admin/Projects"
 import IdCards from "@/components/admin/IdCards"
 import Letters from "@/components/admin/Letters"
+import Payroll from "@/components/admin/Payroll"
 import Plan from "@/routes/Plan"
 import Notes from "@/routes/Notes"
 import Analytics from "@/components/admin/Analytics"
@@ -29,7 +30,7 @@ import {
   Image, Edit, LayoutDashboard, MessageSquare, MessageCircle, FileText, Settings, Menu,
   Bell, TrendingUp, Clock, CheckCircle2, AlertCircle, MoreVertical,
   FolderKanban, IdCard, FileSignature, UserCircle, ClipboardList, StickyNote,
-  Sun, Moon, Key, Save,
+  Sun, Moon, Key, Save, Coins,
 } from "lucide-react"
 import { useTheme } from "@/hooks/useTheme"
 
@@ -406,6 +407,7 @@ function Dashboard({ email, userId }) {
           <NavItem icon={MessageSquare} label="Messages" badge={unread} active={activeTab === "messages"} onClick={() => setActiveTab("messages")} sidebarOpen={sidebarOpen} />
           <NavItem icon={FileText} label="Posts" active={activeTab === "posts"} onClick={() => setActiveTab("posts")} sidebarOpen={sidebarOpen} />
           <NavItem icon={Users} label="Employees" active={activeTab === "employees"} onClick={() => setActiveTab("employees")} sidebarOpen={sidebarOpen} />
+          <NavItem icon={Coins} label="Salary & Payroll" active={activeTab === "payroll"} onClick={() => setActiveTab("payroll")} sidebarOpen={sidebarOpen} />
           <NavItem icon={UserCircle} label="Employee Profile" active={activeTab === "employee-profile"} onClick={() => setActiveTab("employee-profile")} sidebarOpen={sidebarOpen} />
           <NavItem icon={FolderKanban} label="Projects" active={activeTab === "projects"} onClick={() => setActiveTab("projects")} sidebarOpen={sidebarOpen} />
           <NavItem icon={IdCard} label="ID Cards" active={activeTab === "idcards"} onClick={() => setActiveTab("idcards")} sidebarOpen={sidebarOpen} />
@@ -537,6 +539,9 @@ function Dashboard({ email, userId }) {
               <TabsTrigger value="employees" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <Users className="mr-2 size-4" /> Employees
               </TabsTrigger>
+              <TabsTrigger value="payroll" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+                <Coins className="mr-2 size-4" /> Salary & Payroll
+              </TabsTrigger>
               <TabsTrigger value="employee-profile" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
                 <UserCircle className="mr-2 size-4" /> Profile
               </TabsTrigger>
@@ -584,6 +589,7 @@ function Dashboard({ email, userId }) {
             <TabsContent value="messages" className="space-y-4"><Messages /></TabsContent>
             <TabsContent value="posts" className="space-y-4"><Posts /></TabsContent>
             <TabsContent value="employees" className="space-y-4"><Employees /></TabsContent>
+            <TabsContent value="payroll" className="space-y-4"><Payroll /></TabsContent>
             <TabsContent value="employee-profile" className="space-y-4"><EmployeeProfile /></TabsContent>
             <TabsContent value="projects" className="space-y-4"><Projects /></TabsContent>
             <TabsContent value="idcards" className="space-y-4"><IdCards /></TabsContent>
@@ -672,6 +678,7 @@ function Dashboard({ email, userId }) {
               <NavItem icon={MessageSquare} label="Messages" badge={unread} active={activeTab === "messages"} onClick={() => { setActiveTab("messages"); setMobileMenuOpen(false); }} sidebarOpen={true} />
               <NavItem icon={FileText} label="Posts" active={activeTab === "posts"} onClick={() => { setActiveTab("posts"); setMobileMenuOpen(false); }} sidebarOpen={true} />
               <NavItem icon={Users} label="Employees" active={activeTab === "employees"} onClick={() => { setActiveTab("employees"); setMobileMenuOpen(false); }} sidebarOpen={true} />
+              <NavItem icon={Coins} label="Salary & Payroll" active={activeTab === "payroll"} onClick={() => { setActiveTab("payroll"); setMobileMenuOpen(false); }} sidebarOpen={true} />
               <NavItem icon={UserCircle} label="Employee Profile" active={activeTab === "employee-profile"} onClick={() => { setActiveTab("employee-profile"); setMobileMenuOpen(false); }} sidebarOpen={true} />
               <NavItem icon={FolderKanban} label="Projects" active={activeTab === "projects"} onClick={() => { setActiveTab("projects"); setMobileMenuOpen(false); }} sidebarOpen={true} />
               <NavItem icon={IdCard} label="ID Cards" active={activeTab === "idcards"} onClick={() => { setActiveTab("idcards"); setMobileMenuOpen(false); }} sidebarOpen={true} />

@@ -16,6 +16,23 @@ import Events from './routes/Events.jsx'
 import PostDetail from './routes/PostDetail.jsx'
 import PrivacyPolicy from './routes/PrivacyPolicy.jsx'
 import TermsOfService from './routes/TermsOfService.jsx'
+import VerifyDocument from './routes/VerifyDocument.jsx'
+
+// Auto-redirect path-based verification URLs to HashRouter format
+if (typeof window !== "undefined" && window.location.pathname) {
+  const p = window.location.pathname
+  if (p.includes("/verify") || p.includes("/payment-letter")) {
+    const search = window.location.search || ""
+    const hash = window.location.hash || ""
+    if (!hash.includes("verify") && !hash.includes("payment-letter")) {
+      const parts = p.split("/").filter(Boolean)
+      const lastPart = parts[parts.length - 1]
+      const idFromPath = lastPart && lastPart !== "verify" && lastPart !== "payment-letter" ? lastPart : ""
+      const query = search ? search : idFromPath ? `?id=${idFromPath}` : ""
+      window.location.replace(`${window.location.origin}/#/verify${query}`)
+    }
+  }
+}
 
 const queryClient = new QueryClient()
 
@@ -26,6 +43,10 @@ createRoot(document.getElementById('root')).render(
         <Routes>
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/employee" element={<EmployeeDashboard />} />
+          <Route path="/verify" element={<VerifyDocument />} />
+          <Route path="/verify/:id" element={<VerifyDocument />} />
+          <Route path="/payment-letter/:id" element={<VerifyDocument />} />
+          <Route path="/verify-letter/:id" element={<VerifyDocument />} />
           <Route path="/plan" element={<Plan />} />
           <Route path="/notes" element={<Notes />} />
           <Route path="/careers" element={<Careers />} />

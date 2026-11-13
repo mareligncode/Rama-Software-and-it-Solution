@@ -124,6 +124,61 @@ function getExtraData(template) {
   }
 }
 
+// Helper to generate the next auto-incrementing reference number with "RAMA-" prefix
+export function getNextLetterReference(existingLetters = []) {
+  const currentYear = new Date().getFullYear()
+  let maxSeq = 0
+
+  let allLetters = Array.isArray(existingLetters) ? [...existingLetters] : []
+  try {
+    const local = localStorage.getItem("rama_generated_letters")
+    if (local) {
+      const parsed = JSON.parse(local)
+      if (Array.isArray(parsed)) {
+        allLetters = [...allLetters, ...parsed]
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  allLetters.forEach((l) => {
+    const ref = (l?.reference_number || l?.ref || "").trim()
+    if (!ref) return
+
+    // Match RAMA-YYYY-NNN (e.g. RAMA-2026-001)
+    const matchYear = ref.match(/RAMA-(?:\d{4})-(\d+)/i)
+    if (matchYear && matchYear[1]) {
+      const num = parseInt(matchYear[1], 10)
+      if (!isNaN(num) && num > maxSeq) maxSeq = num
+      return
+    }
+
+    // Match RAMA-NNN (e.g. RAMA-001)
+    const matchDirect = ref.match(/RAMA-(\d+)/i)
+    if (matchDirect && matchDirect[1]) {
+      const num = parseInt(matchDirect[1], 10)
+      if (!isNaN(num) && num > maxSeq) maxSeq = num
+      return
+    }
+
+    // Match legacy REF-YYYY-NNN (e.g. REF-2026-089)
+    const matchLegacy = ref.match(/REF-(?:\d{4})-(\d+)/i)
+    if (matchLegacy && matchLegacy[1]) {
+      const num = parseInt(matchLegacy[1], 10)
+      if (!isNaN(num) && num > maxSeq && num < 1000) maxSeq = num
+      return
+    }
+  })
+
+  if (maxSeq === 0 && allLetters.length > 0) {
+    maxSeq = allLetters.length
+  }
+
+  const nextSeq = maxSeq + 1
+  return `RAMA-${currentYear}-${String(nextSeq).padStart(3, "0")}`
+}
+
 export default function Letters() {
   const qc = useQueryClient()
   const printRef = useRef(null)
@@ -209,7 +264,7 @@ export default function Letters() {
     signer_title: "General Manager",
     qr_code_content: "https://ramaitsolution.com/",
     letter_date: new Date().toISOString().split('T')[0],
-    reference_number: `REF-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+    reference_number: getNextLetterReference(),
   })
 
   // Queries
@@ -231,18 +286,38 @@ export default function Letters() {
   const { data: generatedLetters, isLoading: lettersLoading } = useQuery({
     queryKey: ["generated-letters"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("generated_letters")
-        .select(`
-          *,
-          employee:employees(first_name, last_name, email)
-        `)
-        .order("generated_at", { ascending: false })
-      if (error) {
-        console.warn("Could not fetch generated_letters:", error)
-        return []
+      let dbData = []
+      try {
+        const { data, error } = await supabase
+          .from("generated_letters")
+          .select(`
+            *,
+            employee:employees(first_name, last_name, email)
+          `)
+          .order("generated_at", { ascending: false })
+        if (!error && Array.isArray(data)) {
+          dbData = data
+        }
+      } catch (err) {
+        console.warn("Could not fetch generated_letters:", err)
       }
-      return data ?? []
+
+      try {
+        const local = localStorage.getItem("rama_generated_letters")
+        if (local) {
+          const parsed = JSON.parse(local)
+          if (Array.isArray(parsed)) {
+            const ids = new Set(dbData.map((d) => d.id))
+            parsed.forEach((p) => {
+              if (!ids.has(p.id)) dbData.push(p)
+            })
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      return dbData
     },
   })
 
@@ -363,7 +438,7 @@ export default function Letters() {
         signer_name: signName,
         signer_title: signTitle,
         letter_date: data.letter_date || new Date().toLocaleDateString(),
-        reference_number: data.reference_number || "REF-001",
+        reference_number: (data.reference_number || "").trim() || getNextLetterReference(generatedLetters),
         manager_name: signName,
         manager_title: signTitle,
         ...variablesData,
@@ -375,6 +450,8 @@ export default function Letters() {
         body = body.replace(regex, mergedVariables[key] || "")
         subject = subject.replace(regex, mergedVariables[key] || "")
       })
+
+      const finalRef = (data.reference_number || "").trim() || getNextLetterReference(generatedLetters)
 
       const payload = {
         template_id: data.template_id,
@@ -392,6 +469,7 @@ export default function Letters() {
           signer_name: signName,
           signer_title: signTitle,
           qr_code_content: qrUrl,
+          reference_number: finalRef,
         },
         recipient_name: mergedVariables.recipient_name,
         recipient_address: data.recipient_address || "",
@@ -400,12 +478,31 @@ export default function Letters() {
         recipient_email: data.recipient_email || "",
         recipient_phone: data.recipient_phone || "",
         letter_date: data.letter_date,
-        reference_number: data.reference_number,
+        reference_number: finalRef,
       }
 
-      const { data: newLetter, error } = await supabase.from("generated_letters").insert(payload).select().single()
-      if (error) throw error
-      return newLetter
+      let createdLetter = null
+      try {
+        const { data: newLetter, error } = await supabase.from("generated_letters").insert(payload).select().single()
+        if (!error && newLetter) createdLetter = newLetter
+      } catch (err) {
+        console.warn("Supabase insert letter notice:", err)
+      }
+
+      // Local fallback persistence
+      if (!createdLetter) {
+        createdLetter = { ...payload, id: `local-${Date.now()}`, generated_at: new Date().toISOString() }
+      }
+
+      try {
+        const local = localStorage.getItem("rama_generated_letters")
+        const list = local ? JSON.parse(local) : []
+        localStorage.setItem("rama_generated_letters", JSON.stringify([createdLetter, ...list.filter(l => l.id !== createdLetter.id)]))
+      } catch {
+        // ignore
+      }
+
+      return createdLetter
     },
     onSuccess: (newLetter) => {
       toast.success("Letter generated successfully!")
@@ -478,7 +575,7 @@ export default function Letters() {
       signer_title: companySettings?.manager_title || "General Manager",
       qr_code_content: "https://ramaitsolution.com/",
       letter_date: new Date().toISOString().split('T')[0],
-      reference_number: `REF-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+      reference_number: getNextLetterReference(generatedLetters),
     })
     setSelectedTemplate(null)
   }
@@ -706,7 +803,7 @@ export default function Letters() {
       signer_title: signTitle,
       qr_code_content: qrUrl,
       letter_date: new Date().toISOString().split('T')[0],
-      reference_number: "REF-2026-089",
+      reference_number: getNextLetterReference(generatedLetters),
     })
     setSelectedTemplate(template)
     setPreviewDialogOpen(true)
@@ -926,7 +1023,7 @@ export default function Letters() {
                         <SelectItem value="promotion">Promotion Letter</SelectItem>
                         <SelectItem value="termination">Termination Letter</SelectItem>
                         <SelectItem value="warning">Warning Letter</SelectItem>
-                        <SelectItem value="custom">Custom Letter</SelectItem>
+                        <SelectItem value="salary_increment">Notification of Salary Increment</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1155,7 +1252,16 @@ export default function Letters() {
           {/* Generate Letter Button & Dialog */}
           <Dialog open={generateDialogOpen} onOpenChange={(open) => {
             setGenerateDialogOpen(open)
-            if (!open) resetGenerateForm()
+            if (open) {
+              setGenerateForm((prev) => ({
+                ...prev,
+                reference_number: prev.reference_number?.startsWith("RAMA-")
+                  ? prev.reference_number
+                  : getNextLetterReference(generatedLetters),
+              }))
+            } else {
+              resetGenerateForm()
+            }
           }}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25">
@@ -1275,11 +1381,27 @@ export default function Letters() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs">Reference Number</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Reference Number</Label>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setGenerateForm((prev) => ({
+                              ...prev,
+                              reference_number: getNextLetterReference(generatedLetters),
+                            }))
+                          }
+                          className="text-[10px] text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-0.5"
+                          title="Generate auto-incremented reference"
+                        >
+                          Auto: RAMA-
+                        </button>
+                      </div>
                       <Input
                         value={generateForm.reference_number}
                         onChange={(e) => setGenerateForm({ ...generateForm, reference_number: e.target.value })}
-                        className="mt-1"
+                        placeholder="e.g. RAMA-2026-001"
+                        className="mt-1 font-mono font-semibold"
                       />
                     </div>
                     <div>
@@ -1626,7 +1748,13 @@ function ExecutiveLetterhead({ template, content, companySettings }) {
   const companyWebsite = content.company_website || extra.company_website || "www.ramasoftware.com"
   const signerName = content.signer_name || extra.signer_name || companySettings?.manager_name || "Daniel Marion"
   const signerTitle = content.signer_title || extra.signer_title || companySettings?.manager_title || "General Manager"
-  const qrCodeUrl = content.qr_code_content || extra.qr_code_content || template?.qr_code_content || "https://ramaitsolution.com/"
+  const origin = typeof window !== "undefined" && window.location.origin && window.location.origin !== "null"
+    ? window.location.origin
+    : "https://ramaitsolution.com"
+  const letterId = content.id || extra.id || template?.id || ""
+  const defaultVerifyUrl = letterId ? `${origin}/#/verify?id=${encodeURIComponent(letterId)}&type=letter` : `${origin}/#/verify`
+  const rawQr = content.qr_code_content || extra.qr_code_content || template?.qr_code_content || defaultVerifyUrl
+  const qrCodeUrl = (rawQr.startsWith("http://") || rawQr.startsWith("https://")) ? rawQr.trim() : `https://${rawQr.trim().replace(/^\/+/, '')}`
 
   // Parse body text into structured paragraphs and bullet items
   const bodyLines = (content.body || "").split("\n")
@@ -1781,15 +1909,36 @@ function ExecutiveLetterhead({ template, content, companySettings }) {
           })}
         </div>
 
-        {/* ---------------- SIGN-OFF BLOCK ---------------- */}
-        <div className="pt-6 flex justify-end">
-          <div className="w-56 text-left space-y-1">
-            <p className="text-xs font-semibold text-slate-800">Sincerely,</p>
+        {/* ---------------- SIGN-OFF & EMPLOYEE ACCEPTANCE BLOCK ---------------- */}
+        <div className="pt-6 grid grid-cols-2 gap-8 items-end">
+          {/* Left: Employee / Candidate Acceptance & Signature */}
+          <div className="w-64 text-left space-y-1">
+            <p className="text-xs font-semibold text-slate-800">Accepted & Acknowledged by:</p>
+            
+            {/* Space for manual employee signature */}
+            <div className="h-12 flex items-end">
+              <div className="w-full border-b border-slate-400 border-dashed" />
+            </div>
+
+            <div className="pt-1.5 space-y-0.5">
+              <p className="text-xs font-bold text-slate-900 leading-tight">
+                {content.recipient_name || "Employee Signature"}
+              </p>
+              <p className="text-[11px] text-slate-600">Employee / Recipient</p>
+              <p className="text-[11px] text-slate-500">Date: _______________________</p>
+            </div>
+          </div>
+
+          {/* Right: Company Authorized Signatory */}
+          <div className="w-64 ml-auto text-left space-y-1">
+            <p className="text-xs font-semibold text-slate-800">For {companyName},</p>
             
             {/* Space for manual signature */}
-            <div className="h-12" />
+            <div className="h-12 flex items-end">
+              <div className="w-full border-b border-slate-400 border-dashed" />
+            </div>
 
-            <div className="border-t border-slate-300 pt-1.5">
+            <div className="pt-1.5 space-y-0.5">
               <p className="text-xs font-bold text-slate-900 leading-tight">{signerName}</p>
               <p className="text-[11px] text-slate-600 leading-tight">{signerTitle}</p>
               <p className="text-[11px] text-slate-500 leading-tight">{companyName}</p>
@@ -1803,12 +1952,12 @@ function ExecutiveLetterhead({ template, content, companySettings }) {
         {/* Bottom-Left Contact Information & QR Code */}
         <div className="flex items-center gap-4 z-10 pl-2">
           {/* Functional QR Code that redirects to https://ramaitsolution.com/ */}
-          <div className="size-16 rounded-xl bg-white p-1.5 border border-slate-200 shadow-sm flex flex-col items-center justify-center shrink-0">
+          <div className="size-[82px] rounded-xl bg-white p-1.5 border border-slate-200 shadow-sm flex flex-col items-center justify-center shrink-0">
             <QRCodeSVG
               value={qrCodeUrl}
-              size={50}
+              size={70}
               level="M"
-              includeMargin={false}
+              includeMargin={true}
             />
           </div>
 
