@@ -33,6 +33,10 @@ import {
   formatCurrency,
   numberToWords,
   generatePayslipPDF,
+  generateOvertimePDF,
+  generateCommissionPDF,
+  generateOvertimeSummaryPDF,
+  generateCommissionSummaryPDF,
 } from "@/lib/payrollUtils"
 
 // Helper to generate next auto-incrementing reference code with "RAMA-" prefix for salary payments
@@ -92,6 +96,10 @@ export default function Payroll() {
   const [overtimeDialogOpen, setOvertimeDialogOpen] = useState(false)
   const [payslipModalOpen, setPayslipModalOpen] = useState(false)
   const [selectedPaymentForPayslip, setSelectedPaymentForPayslip] = useState(null)
+  const [overtimeVoucherModalOpen, setOvertimeVoucherModalOpen] = useState(false)
+  const [selectedOvertimeForVoucher, setSelectedOvertimeForVoucher] = useState(null)
+  const [commissionVoucherModalOpen, setCommissionVoucherModalOpen] = useState(false)
+  const [selectedCommissionForVoucher, setSelectedCommissionForVoucher] = useState(null)
   const [editingPayment, setEditingPayment] = useState(null)
   const [editingCommission, setEditingCommission] = useState(null)
 
@@ -1594,17 +1602,33 @@ export default function Payroll() {
                   Approved commissions can be auto-imported directly into the employee's monthly salary slip.
                 </p>
               </div>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setEditingCommission(null)
-                  setCommissionForm(initialCommissionForm)
-                  setCommissionDialogOpen(true)
-                }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
-              >
-                <Plus className="mr-1.5 size-3.5" /> Register Commission
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    generateCommissionSummaryPDF({
+                      records: commissions,
+                      companySettings: rulesSettings,
+                    })
+                  }}
+                  className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                  title="Export official summary report of all registered commissions"
+                >
+                  <Download className="mr-1.5 size-3.5" /> Export PDF Report
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditingCommission(null)
+                    setCommissionForm(initialCommissionForm)
+                    setCommissionDialogOpen(true)
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                >
+                  <Plus className="mr-1.5 size-3.5" /> Register Commission
+                </Button>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -1701,6 +1725,37 @@ export default function Payroll() {
                                   </Button>
                                 </>
                               )}
+                              {/* View & Print Official Commission Voucher */}
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-7 text-slate-600 hover:text-emerald-600 dark:text-slate-300"
+                                title="View & Print Official Commission Voucher"
+                                onClick={() => {
+                                  setSelectedCommissionForVoucher(c)
+                                  setCommissionVoucherModalOpen(true)
+                                }}
+                              >
+                                <Printer className="size-3.5" />
+                              </Button>
+
+                              {/* Download Official Commission PDF */}
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-7 text-slate-600 hover:text-emerald-600 dark:text-slate-300"
+                                title="Download Official Commission PDF Voucher"
+                                onClick={() => {
+                                  generateCommissionPDF({
+                                    commission: c,
+                                    employee: c.employee,
+                                    companySettings: rulesSettings,
+                                  })
+                                }}
+                              >
+                                <Download className="size-3.5" />
+                              </Button>
+
                               <Button
                                 size="icon"
                                 variant="ghost"
@@ -1709,6 +1764,7 @@ export default function Payroll() {
                               >
                                 <Edit className="size-3.5" />
                               </Button>
+
                               <Button
                                 size="icon"
                                 variant="ghost"
@@ -1771,16 +1827,32 @@ export default function Payroll() {
                   Hours calculated based on Employee Basic Salary / {rulesSettings.standard_monthly_hours}h standard base.
                 </p>
               </div>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setOvertimeForm(initialOvertimeForm)
-                  setOvertimeDialogOpen(true)
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-              >
-                <Plus className="mr-1.5 size-3.5" /> Record Overtime
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    generateOvertimeSummaryPDF({
+                      records: overtimeRecords,
+                      companySettings: rulesSettings,
+                    })
+                  }}
+                  className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                  title="Export official summary report of all logged overtime"
+                >
+                  <Download className="mr-1.5 size-3.5" /> Export PDF Report
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setOvertimeForm(initialOvertimeForm)
+                    setOvertimeDialogOpen(true)
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                >
+                  <Plus className="mr-1.5 size-3.5" /> Record Overtime
+                </Button>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -1872,6 +1944,37 @@ export default function Payroll() {
                                   Approve
                                 </Button>
                               )}
+                              {/* View & Print Official Overtime Voucher */}
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-7 text-slate-600 hover:text-blue-600 dark:text-slate-300"
+                                title="View & Print Official Overtime Voucher"
+                                onClick={() => {
+                                  setSelectedOvertimeForVoucher(ot)
+                                  setOvertimeVoucherModalOpen(true)
+                                }}
+                              >
+                                <Printer className="size-3.5" />
+                              </Button>
+
+                              {/* Download Official Overtime PDF */}
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-7 text-slate-600 hover:text-blue-600 dark:text-slate-300"
+                                title="Download Official Overtime PDF Voucher"
+                                onClick={() => {
+                                  generateOvertimePDF({
+                                    overtime: ot,
+                                    employee: ot.employee,
+                                    companySettings: rulesSettings,
+                                  })
+                                }}
+                              >
+                                <Download className="size-3.5" />
+                              </Button>
+
                               <Button
                                 size="icon"
                                 variant="ghost"
@@ -2200,6 +2303,75 @@ export default function Payroll() {
                   </div>
                 )
               })()}
+            </div>
+          </div>
+
+          {/* Statutory Reference Card: Ethiopian Labour Proclamation No. 1156/2019 */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="size-5 text-emerald-600" />
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Ethiopian Labour Proclamation No. 1156/2019 Statutory Compliance
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  ERP rules and calculators are engineered to comply with Part Four: Hours of Work, Weekly Rest, and Public Holidays.
+                </p>
+              </div>
+              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 self-start sm:self-auto text-xs px-2.5 py-1">
+                Proclamation 1156/2019 Certified
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+              {/* Box 1: Normal Hours */}
+              <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-slate-100">
+                  <Sun className="size-4 text-amber-500" />
+                  <span>Art. 61: Normal Hours</span>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                  Normal hours shall not exceed <strong>8 hours a day</strong> or <strong>48 hours a week</strong>. Averaged standard base is <strong>208 hours / month</strong>.
+                </p>
+              </div>
+
+              {/* Box 2: Overtime Limits */}
+              <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-slate-100">
+                  <Clock className="size-4 text-blue-500" />
+                  <span>Art. 67: Statutory Limits</span>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                  Overtime work is strictly capped at a maximum of <strong>4 hours in a day</strong> and <strong>12 hours in a week</strong>, except under imminent force-majeure.
+                </p>
+              </div>
+
+              {/* Box 3: Overtime Rates */}
+              <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-slate-100">
+                  <Coins className="size-4 text-indigo-500" />
+                  <span>Art. 68: Payment Rates</span>
+                </div>
+                <ul className="text-slate-600 dark:text-slate-400 text-[11px] space-y-0.5">
+                  <li>• Day (06:00–22:00): <strong>1.5x</strong></li>
+                  <li>• Night (22:00–06:00): <strong>1.75x</strong></li>
+                  <li>• Weekly Rest Day: <strong>2.0x</strong></li>
+                  <li>• Public Holiday: <strong>2.5x</strong></li>
+                </ul>
+              </div>
+
+              {/* Box 4: Rest Days & Holidays */}
+              <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-slate-100">
+                  <Calendar className="size-4 text-purple-500" />
+                  <span>Art. 69–75: Rest & Holidays</span>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                  Weekly rest must cover not less than <strong>24 consecutive hours</strong>. Working on rest days entitles employee to compensatory rest or cash upon separation.
+                </p>
+              </div>
             </div>
           </div>
         </TabsContent>
@@ -2853,8 +3025,24 @@ export default function Payroll() {
               </div>
             </div>
 
+            {/* Statutory Daily Limit Advisory (Labour Proclamation 1156/2019 Art. 67(2)) */}
+            {Number(overtimeForm.hours) > 4 && (
+              <div className="text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-lg border border-amber-200 dark:border-amber-800 flex items-start gap-2">
+                <AlertCircle className="size-4 shrink-0 text-amber-600 mt-0.5" />
+                <div>
+                  <span className="font-bold">Statutory Limit Notice (Art. 67(2)):</span>
+                  <p className="mt-0.5 text-[10.5px] leading-tight">
+                    Under Ethiopian Labour Proclamation No. 1156/2019 Article 67(2), daily overtime shall not exceed <strong>4 hours per day</strong> and <strong>12 hours per week</strong>, except under strict emergency force-majeure conditions.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
-              <Label className="text-xs font-semibold">Overtime Rule Type *</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Overtime Rule Type *</Label>
+                <span className="text-[10px] text-slate-400 font-medium">Proclamation 1156/2019 Art. 68</span>
+              </div>
               <Select
                 value={overtimeForm.overtime_type}
                 onValueChange={(val) => handleOvertimeEmployeeOrTypeChange(undefined, val, undefined)}
@@ -2871,7 +3059,10 @@ export default function Payroll() {
 
                     return (
                       <SelectItem key={t.value} value={t.value}>
-                        {t.label} ({rate}x)
+                        <div className="flex flex-col text-left py-0.5">
+                          <span className="font-medium">{t.label} ({rate}x)</span>
+                          <span className="text-[10px] text-slate-400">{t.timeRange} • {t.articleRef}</span>
+                        </div>
                       </SelectItem>
                     )
                   })}
@@ -3246,6 +3437,531 @@ export default function Payroll() {
                     })
                   }}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm"
+                >
+                  <Download className="mr-1.5 size-4" /> Download Official PDF
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )
+      })()}
+
+      {/* ========================================================
+          MODAL: OFFICIAL OVERTIME VOUCHER VIEW & PRINT (WITH LOGO, COMPANY, SIGNATURES & CHAPA)
+      ======================================================== */}
+      {selectedOvertimeForVoucher && (() => {
+        const ot = selectedOvertimeForVoucher
+        const emp = ot.employee || employees.find((e) => e.id === ot.employee_id)
+        const fullName = `${emp?.first_name || ""} ${emp?.last_name || ""}`.trim() || "Employee"
+        const meta = getOvertimeTypeMeta(ot.overtime_type)
+
+        const origin =
+          typeof window !== "undefined" && window.location.origin && window.location.origin !== "null"
+            ? window.location.origin
+            : "https://ramaitsolution.com"
+        const qrCodeUrl = `${origin}/#/verify?type=overtime&id=${encodeURIComponent(ot.id || "")}`
+
+        const isPaid = ot.status === "paid"
+        const isApproved = ot.status === "approved"
+        const isPending = ot.status === "pending"
+
+        const hourlyRate = Number(ot.hourly_rate) || 0
+        const multiplier = Number(ot.multiplier) || 1.5
+        const hours = Number(ot.hours) || 0
+        const effectiveRate = hourlyRate * multiplier
+        const totalAmount = Number(ot.calculated_amount) || effectiveRate * hours
+
+        return (
+          <Dialog open={overtimeVoucherModalOpen} onOpenChange={setOvertimeVoucherModalOpen}>
+            <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 print:p-0 print:border-none print:shadow-none print:max-w-none print:w-full">
+              <div id="printable-overtime-voucher" className="space-y-5 bg-white text-slate-900 p-2 sm:p-4 rounded-xl print:p-0">
+                {/* 1. Header with Company Logo, Title, and Scannable QR Code */}
+                <div className="bg-[#071B3B] text-white p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-slate-700 shadow-sm print:rounded-none">
+                  {/* Left: Company Logo + Names */}
+                  <div className="flex items-center gap-3.5">
+                    <div className="size-16 sm:size-20 rounded-xl bg-white p-2 border border-slate-200 shadow-sm flex items-center justify-center shrink-0">
+                      <img
+                        src={defaultLogo}
+                        alt="Rama Software Logo"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-black tracking-tight uppercase leading-tight text-white">
+                        RAMA SOFTWARE & IT SOLUTIONS
+                      </h3>
+                      <p className="text-xs text-slate-300 font-medium mt-0.5">
+                        Official Employee Overtime Compensation Voucher
+                      </p>
+                      <p className="text-xs text-sky-300 font-semibold mt-1">
+                        Work Date: {ot.date || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: Functional Scannable QR Code + Status Stamp */}
+                  <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
+                    <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
+                      <QRCodeSVG
+                        value={qrCodeUrl}
+                        size={84}
+                        level="M"
+                        includeMargin={true}
+                      />
+                      <span className="text-[9px] font-bold text-slate-700 mt-1 uppercase tracking-wider">
+                        Scan to Verify
+                      </span>
+                    </div>
+
+                    <div>
+                      <Badge
+                        className={`text-xs px-3 py-1 font-black tracking-wider uppercase shadow-sm ${
+                          isPaid
+                            ? "bg-blue-600 text-white"
+                            : isApproved
+                            ? "bg-emerald-600 text-white"
+                            : isPending
+                            ? "bg-amber-500 text-white"
+                            : "bg-rose-500 text-white"
+                        }`}
+                      >
+                        {ot.status?.toUpperCase() || "APPROVED"}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Employee Info & Overtime Metadata */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs">
+                  <div>
+                    <span className="text-slate-400 font-bold block mb-1 text-[11px] uppercase tracking-wider">
+                      EMPLOYEE INFORMATION
+                    </span>
+                    <p className="text-sm font-bold text-slate-900">{fullName}</p>
+                    <p className="text-slate-600 mt-0.5">Employee ID: <span className="font-semibold text-slate-800">{emp?.employee_id || "N/A"}</span></p>
+                    <p className="text-slate-600">Job Title: <span className="font-semibold text-slate-800">{emp?.job_title || "Staff"}</span></p>
+                    <p className="text-slate-600">Department: <span className="font-semibold text-slate-800">{emp?.department || "General"}</span></p>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 font-bold block mb-1 text-[11px] uppercase tracking-wider">
+                      OVERTIME SPECIFICATION
+                    </span>
+                    <p className="text-slate-600">Voucher ID: <span className="font-mono font-semibold text-slate-800">OT-{(ot.id || "REC").slice(0, 10).toUpperCase()}</span></p>
+                    <p className="text-slate-600">Work Date: <span className="font-semibold text-slate-800">{ot.date || "N/A"}</span></p>
+                    <p className="text-slate-600">Rule Category: <span className="font-semibold text-blue-700">{meta.label}</span></p>
+                    <p className="text-slate-600">Multiplier Rate: <span className="font-semibold text-indigo-700">{multiplier}x Base Hourly</span></p>
+                  </div>
+                </div>
+
+                {/* 3. Detailed Calculation Table */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead className="bg-[#071B3B] text-white">
+                      <tr>
+                        <th className="py-2.5 px-3 text-left font-bold">Calculation Parameter</th>
+                        <th className="py-2.5 px-3 text-right font-bold">Value / Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 bg-white">
+                      <tr className="bg-blue-50/40">
+                        <td className="py-2 px-3 font-semibold text-slate-800">Statutory Legal Framework</td>
+                        <td className="py-2 px-3 text-right font-semibold text-blue-900">
+                          Ethiopian Labour Proclamation No. 1156/2019 ({meta.articleRef || 'Art. 68'})
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Base Monthly Salary</td>
+                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
+                          {formatCurrency(emp?.basic_salary || 0, rulesSettings.currency)}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Standard Monthly Hours Base</td>
+                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
+                          {rulesSettings.standard_monthly_hours} hrs / month
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Standard Base Hourly Rate</td>
+                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
+                          {formatCurrency(hourlyRate, rulesSettings.currency)} / hr
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Applied Rule Multiplier ({meta.label})</td>
+                        <td className="py-2.5 px-3 text-right font-mono font-bold text-indigo-600">
+                          {multiplier}x Rate
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Effective Overtime Hourly Compensation</td>
+                        <td className="py-2.5 px-3 text-right font-mono font-bold text-blue-700">
+                          {formatCurrency(effectiveRate, rulesSettings.currency)} / hr
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Approved Overtime Hours Logged</td>
+                        <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
+                          {hours} hrs
+                        </td>
+                      </tr>
+                      {ot.notes && (
+                        <tr className="hover:bg-slate-50/50">
+                          <td className="py-2.5 px-3 font-medium text-slate-700">Work Description / Tasks Completed</td>
+                          <td className="py-2.5 px-3 text-right text-slate-600 italic">
+                            {ot.notes}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 4. Total Payable Box */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-4 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-black text-indigo-950 uppercase tracking-wide">
+                      TOTAL OVERTIME COMPENSATION PAYABLE
+                    </span>
+                    <p className="text-[11px] text-slate-600 italic mt-0.5 font-medium">
+                      Amount in words: {numberToWords(totalAmount)}
+                    </p>
+                  </div>
+                  <div className="text-2xl font-black font-mono text-blue-700">
+                    {formatCurrency(totalAmount, rulesSettings.currency)}
+                  </div>
+                </div>
+
+                {/* 5. SIGNATURES & OFFICIAL CHAPA (ማህተም) SECTION */}
+                <div className="pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
+                  {/* 1. Prepared by Supervisor */}
+                  <div className="space-y-1 text-xs">
+                    <p className="font-bold text-slate-800">Prepared By:</p>
+                    <div className="h-9 border-b border-slate-300 border-dashed" />
+                    <p className="font-semibold text-slate-900 mt-1">Supervisor / Department Lead</p>
+                    <p className="text-[11px] text-slate-500">Rama Software</p>
+                  </div>
+
+                  {/* 2. OFFICIAL CHAPA (COMPANY STAMP / SEAL / ማህተም) */}
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="size-24 rounded-full border-2 border-dashed border-blue-700 bg-blue-50/50 flex flex-col items-center justify-center p-2 text-blue-800 shadow-xs relative">
+                      <div className="absolute inset-1 rounded-full border border-dotted border-blue-500 pointer-events-none" />
+                      <span className="text-[7.5px] font-black uppercase tracking-tight">RAMA SOFTWARE</span>
+                      <span className="text-[8px] font-black tracking-widest my-0.5 text-blue-900">★ CHAPA ★</span>
+                      <span className="text-[7.5px] font-extrabold uppercase">ማህተም / SEAL</span>
+                      <span className="text-[6.5px] text-blue-600 font-medium">OFFICIAL STAMP</span>
+                    </div>
+                    <span className="text-[8px] font-bold text-blue-700 mt-1 uppercase tracking-wider">
+                      Placeholder for Chapa
+                    </span>
+                  </div>
+
+                  {/* 3. Authorized Signature (General Manager) */}
+                  <div className="space-y-1 text-xs">
+                    <p className="font-bold text-slate-800">Authorized Signature:</p>
+                    <div className="h-9 border-b border-slate-300 border-dashed" />
+                    <p className="font-semibold text-slate-900 mt-1">General Manager</p>
+                    <p className="text-[11px] text-slate-500">Rama Software</p>
+                  </div>
+
+                  {/* 4. Employee Signature & Acceptance */}
+                  <div className="space-y-1 text-xs sm:text-right">
+                    <p className="font-bold text-slate-800">Employee Signature:</p>
+                    <div className="h-9 border-b border-slate-300 border-dashed" />
+                    <p className="font-semibold text-slate-900 mt-1 truncate">{fullName}</p>
+                    <p className="text-[11px] text-slate-500">Confirmed & Signed</p>
+                  </div>
+                </div>
+
+                {/* Footer Note */}
+                <div className="pt-2 text-center text-[10px] text-slate-400">
+                  This document is an authenticated overtime compensation voucher generated by Rama Software & IT Solutions ERP.
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <DialogFooter className="print:hidden gap-2 pt-2 flex-wrap sm:flex-nowrap">
+                <Button variant="outline" onClick={() => setOvertimeVoucherModalOpen(false)}>
+                  Close
+                </Button>
+
+                {/* Direct Browser Print Button */}
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    window.print()
+                  }}
+                  className="border-slate-300 text-slate-700 hover:bg-slate-100"
+                >
+                  <Printer className="mr-1.5 size-4 text-slate-600" /> Print Voucher
+                </Button>
+
+                {/* Download PDF Button */}
+                <Button
+                  onClick={() => {
+                    generateOvertimePDF({
+                      overtime: ot,
+                      employee: emp,
+                      companySettings: rulesSettings,
+                    })
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm"
+                >
+                  <Download className="mr-1.5 size-4" /> Download Official PDF
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )
+      })()}
+
+      {/* ========================================================
+          MODAL: OFFICIAL COMMISSION VOUCHER VIEW & PRINT (WITH LOGO, COMPANY, SIGNATURES & CHAPA)
+      ======================================================== */}
+      {selectedCommissionForVoucher && (() => {
+        const c = selectedCommissionForVoucher
+        const emp = c.employee || employees.find((e) => e.id === c.employee_id)
+        const fullName = `${emp?.first_name || ""} ${emp?.last_name || ""}`.trim() || "Employee"
+
+        const origin =
+          typeof window !== "undefined" && window.location.origin && window.location.origin !== "null"
+            ? window.location.origin
+            : "https://ramaitsolution.com"
+        const qrCodeUrl = `${origin}/#/verify?type=commission&id=${encodeURIComponent(c.id || "")}`
+
+        const isPaid = c.status === "paid"
+        const isApproved = c.status === "approved"
+        const isPending = c.status === "pending"
+
+        const dealAmount = Number(c.deal_amount) || 0
+        const rate = Number(c.commission_rate) || 0
+        const commissionAmount = Number(c.commission_amount) || 0
+
+        return (
+          <Dialog open={commissionVoucherModalOpen} onOpenChange={setCommissionVoucherModalOpen}>
+            <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 print:p-0 print:border-none print:shadow-none print:max-w-none print:w-full">
+              <div id="printable-commission-voucher" className="space-y-5 bg-white text-slate-900 p-2 sm:p-4 rounded-xl print:p-0">
+                {/* 1. Header with Company Logo, Title, and Scannable QR Code */}
+                <div className="bg-[#071B3B] text-white p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-slate-700 shadow-sm print:rounded-none">
+                  {/* Left: Company Logo + Names */}
+                  <div className="flex items-center gap-3.5">
+                    <div className="size-16 sm:size-20 rounded-xl bg-white p-2 border border-slate-200 shadow-sm flex items-center justify-center shrink-0">
+                      <img
+                        src={defaultLogo}
+                        alt="Rama Software Logo"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-black tracking-tight uppercase leading-tight text-white">
+                        RAMA SOFTWARE & IT SOLUTIONS
+                      </h3>
+                      <p className="text-xs text-slate-300 font-medium mt-0.5">
+                        Official Employee Sales & Performance Commission Voucher
+                      </p>
+                      <p className="text-xs text-emerald-300 font-semibold mt-1">
+                        Earned Date: {c.earned_date || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: Functional Scannable QR Code + Status Stamp */}
+                  <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
+                    <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
+                      <QRCodeSVG
+                        value={qrCodeUrl}
+                        size={84}
+                        level="M"
+                        includeMargin={true}
+                      />
+                      <span className="text-[9px] font-bold text-slate-700 mt-1 uppercase tracking-wider">
+                        Scan to Verify
+                      </span>
+                    </div>
+
+                    <div>
+                      <Badge
+                        className={`text-xs px-3 py-1 font-black tracking-wider uppercase shadow-sm ${
+                          isPaid
+                            ? "bg-blue-600 text-white"
+                            : isApproved
+                            ? "bg-emerald-600 text-white"
+                            : isPending
+                            ? "bg-amber-500 text-white"
+                            : "bg-rose-500 text-white"
+                        }`}
+                      >
+                        {c.status?.toUpperCase() || "APPROVED"}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Employee Info & Commission Metadata */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs">
+                  <div>
+                    <span className="text-slate-400 font-bold block mb-1 text-[11px] uppercase tracking-wider">
+                      EMPLOYEE INFORMATION
+                    </span>
+                    <p className="text-sm font-bold text-slate-900">{fullName}</p>
+                    <p className="text-slate-600 mt-0.5">Employee ID: <span className="font-semibold text-slate-800">{emp?.employee_id || "N/A"}</span></p>
+                    <p className="text-slate-600">Job Title: <span className="font-semibold text-slate-800">{emp?.job_title || "Staff"}</span></p>
+                    <p className="text-slate-600">Department: <span className="font-semibold text-slate-800">{emp?.department || "General"}</span></p>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 font-bold block mb-1 text-[11px] uppercase tracking-wider">
+                      COMMISSION & DEAL METADATA
+                    </span>
+                    <p className="text-slate-600">Voucher ID: <span className="font-mono font-semibold text-slate-800">COM-{(c.id || "REC").slice(0, 10).toUpperCase()}</span></p>
+                    <p className="text-slate-600">Earned Date: <span className="font-semibold text-slate-800">{c.earned_date || "N/A"}</span></p>
+                    <p className="text-slate-600">Project / Deal: <span className="font-semibold text-emerald-700">{c.title || "Sales Commission"}</span></p>
+                    <p className="text-slate-600">Deal Value: <span className="font-semibold text-slate-800">{dealAmount > 0 ? formatCurrency(dealAmount, rulesSettings.currency) : "Fixed Allocation"}</span></p>
+                  </div>
+                </div>
+
+                {/* 3. Detailed Calculation Table */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead className="bg-[#071B3B] text-white">
+                      <tr>
+                        <th className="py-2.5 px-3 text-left font-bold">Commission Parameter</th>
+                        <th className="py-2.5 px-3 text-right font-bold">Specification</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 bg-white">
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Project / Deal Title</td>
+                        <td className="py-2.5 px-3 text-right font-semibold text-slate-900">
+                          {c.title || "Performance Incentive"}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Contract / Deal Closed Value</td>
+                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
+                          {dealAmount > 0 ? formatCurrency(dealAmount, rulesSettings.currency) : "Fixed Milestone / Award"}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Applied Commission Rate %</td>
+                        <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-600">
+                          {rate > 0 ? `${rate}% of Contract Value` : "Fixed Fee Incentive"}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Calculation Mode</td>
+                        <td className="py-2.5 px-3 text-right font-mono text-slate-700">
+                          {rate > 0 ? `${rate}% × ${formatCurrency(dealAmount, rulesSettings.currency)}` : "Direct Approved Allocation"}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-3 font-medium text-slate-700">Earned Date</td>
+                        <td className="py-2.5 px-3 text-right text-slate-800">
+                          {c.earned_date || "N/A"}
+                        </td>
+                      </tr>
+                      {c.notes && (
+                        <tr className="hover:bg-slate-50/50">
+                          <td className="py-2.5 px-3 font-medium text-slate-700">Performance Scope & Notes</td>
+                          <td className="py-2.5 px-3 text-right text-slate-600 italic">
+                            {c.notes}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 4. Total Payable Box */}
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-4 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                      TOTAL COMMISSION PAYABLE
+                    </span>
+                    <p className="text-[11px] text-slate-600 italic mt-0.5 font-medium">
+                      Amount in words: {numberToWords(commissionAmount)}
+                    </p>
+                  </div>
+                  <div className="text-2xl font-black font-mono text-emerald-700">
+                    {formatCurrency(commissionAmount, rulesSettings.currency)}
+                  </div>
+                </div>
+
+                {/* 5. SIGNATURES & OFFICIAL CHAPA (ማህተም) SECTION */}
+                <div className="pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
+                  {/* 1. Prepared by Lead */}
+                  <div className="space-y-1 text-xs">
+                    <p className="font-bold text-slate-800">Prepared By:</p>
+                    <div className="h-9 border-b border-slate-300 border-dashed" />
+                    <p className="font-semibold text-slate-900 mt-1">Sales / Project Lead</p>
+                    <p className="text-[11px] text-slate-500">Rama Software</p>
+                  </div>
+
+                  {/* 2. OFFICIAL CHAPA (COMPANY STAMP / SEAL / ማህተም) */}
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="size-24 rounded-full border-2 border-dashed border-blue-700 bg-blue-50/50 flex flex-col items-center justify-center p-2 text-blue-800 shadow-xs relative">
+                      <div className="absolute inset-1 rounded-full border border-dotted border-blue-500 pointer-events-none" />
+                      <span className="text-[7.5px] font-black uppercase tracking-tight">RAMA SOFTWARE</span>
+                      <span className="text-[8px] font-black tracking-widest my-0.5 text-blue-900">★ CHAPA ★</span>
+                      <span className="text-[7.5px] font-extrabold uppercase">ማህተም / SEAL</span>
+                      <span className="text-[6.5px] text-blue-600 font-medium">OFFICIAL STAMP</span>
+                    </div>
+                    <span className="text-[8px] font-bold text-blue-700 mt-1 uppercase tracking-wider">
+                      Placeholder for Chapa
+                    </span>
+                  </div>
+
+                  {/* 3. Authorized Signature (General Manager) */}
+                  <div className="space-y-1 text-xs">
+                    <p className="font-bold text-slate-800">Authorized Signature:</p>
+                    <div className="h-9 border-b border-slate-300 border-dashed" />
+                    <p className="font-semibold text-slate-900 mt-1">General Manager</p>
+                    <p className="text-[11px] text-slate-500">Rama Software</p>
+                  </div>
+
+                  {/* 4. Employee Signature & Acceptance */}
+                  <div className="space-y-1 text-xs sm:text-right">
+                    <p className="font-bold text-slate-800">Employee Signature:</p>
+                    <div className="h-9 border-b border-slate-300 border-dashed" />
+                    <p className="font-semibold text-slate-900 mt-1 truncate">{fullName}</p>
+                    <p className="text-[11px] text-slate-500">Acknowledged & Signed</p>
+                  </div>
+                </div>
+
+                {/* Footer Note */}
+                <div className="pt-2 text-center text-[10px] text-slate-400">
+                  This document is an authenticated performance commission voucher generated by Rama Software & IT Solutions ERP.
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <DialogFooter className="print:hidden gap-2 pt-2 flex-wrap sm:flex-nowrap">
+                <Button variant="outline" onClick={() => setCommissionVoucherModalOpen(false)}>
+                  Close
+                </Button>
+
+                {/* Direct Browser Print Button */}
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    window.print()
+                  }}
+                  className="border-slate-300 text-slate-700 hover:bg-slate-100"
+                >
+                  <Printer className="mr-1.5 size-4 text-slate-600" /> Print Voucher
+                </Button>
+
+                {/* Download PDF Button */}
+                <Button
+                  onClick={() => {
+                    generateCommissionPDF({
+                      commission: c,
+                      employee: emp,
+                      companySettings: rulesSettings,
+                    })
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm"
                 >
                   <Download className="mr-1.5 size-4" /> Download Official PDF
                 </Button>

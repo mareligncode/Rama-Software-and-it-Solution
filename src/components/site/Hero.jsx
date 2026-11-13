@@ -456,7 +456,11 @@ export function Hero() {
               alt="Rama Software Logo"
               className="h-24 w-auto object-contain"
               animate={isReducedMotion ? {} : {
-                filter: ["drop-shadow(0 0 10px oklch(0.77_0.153_226))", "drop-shadow(0 0 30px oklch(0.77_0.153_226))", "drop-shadow(0 0 10px oklch(0.77_0.153_226))"]
+                filter: [
+                  "drop-shadow(0 0 10px rgba(56, 189, 248, 0.5))",
+                  "drop-shadow(0 0 30px rgba(56, 189, 248, 0.8))",
+                  "drop-shadow(0 0 10px rgba(56, 189, 248, 0.5))"
+                ]
               }}
               transition={{
                 duration: 12,

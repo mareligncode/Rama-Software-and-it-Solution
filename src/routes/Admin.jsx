@@ -91,10 +91,11 @@ export default function AdminPage() {
 
 function Center({ children }) {
   return (
-    <div className="relative grid min-h-screen place-items-center overflow-hidden bg-background px-4">
-      <div className="pointer-events-none absolute -top-40 left-1/2 size-[36rem] -translate-x-1/2 rounded-full bg-accent/20 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-52 right-0 size-[30rem] rounded-full bg-primary/20 blur-[130px]" />
-      <div className="relative z-10 w-full max-w-sm">{children}</div>
+    <div className="relative grid min-h-screen place-items-center overflow-hidden bg-gradient-to-br from-slate-50 via-amber-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4" style={{ fontFamily: '"Inter", "Times New Roman", Georgia, serif' }}>
+      <div className="pointer-events-none absolute -top-40 left-1/2 size-[36rem] -translate-x-1/2 rounded-full bg-amber-200/30 dark:bg-amber-900/20 blur-[140px]" />
+      <div className="pointer-events-none absolute -bottom-52 right-0 size-[30rem] rounded-full bg-indigo-300/20 dark:bg-indigo-900/20 blur-[130px]" />
+      <div className="pointer-events-none absolute top-1/3 left-10 size-[20rem] rounded-full bg-emerald-200/15 dark:bg-emerald-900/10 blur-[100px]" />
+      <div className="relative z-10 w-full max-w-md">{children}</div>
     </div>
   )
 }
@@ -107,15 +108,17 @@ async function signOut() {
 function NoAccess() {
   return (
     <Center>
-      <div className="card-lux rounded-3xl border border-border bg-card/80 p-8 text-center shadow-float backdrop-blur">
-        <div className="mx-auto grid size-12 place-items-center rounded-2xl brand-gradient text-primary-foreground">
-          <ShieldCheck className="size-6" />
+      <div className="card-premium rounded-3xl border border-amber-200/50 dark:border-amber-800/30 bg-white/90 dark:bg-slate-900/90 p-10 text-center shadow-2xl backdrop-blur-xl">
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/25">
+          <ShieldCheck className="size-7" />
         </div>
-        <h1 className="mt-5 font-display text-lg font-bold">No admin access</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h1 className="mt-6 font-display text-xl font-bold tracking-tight text-slate-900 dark:text-white">No Admin Access</h1>
+        <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400" style={{ fontFamily: '"Inter", "Times New Roman", Georgia, serif' }}>
           This account is not authorised for the admin console.
         </p>
-        <Button className="mt-6" variant="outline" onClick={signOut}>Sign out</Button>
+        <Button className="mt-8 rounded-xl px-6 h-11 font-medium" variant="outline" onClick={signOut}>
+          <LogOut className="mr-2 size-4" /> Sign Out
+        </Button>
       </div>
     </Center>
   )
@@ -152,28 +155,28 @@ function AuthCard() {
 
   return (
     <Center>
-      <div className="card-lux w-full rounded-3xl border border-border bg-card/80 p-8 shadow-float backdrop-blur">
-        <div className="grid size-12 place-items-center rounded-2xl brand-gradient text-primary-foreground shadow-glow">
-          <ShieldCheck className="size-6" />
+      <div className="card-premium w-full rounded-3xl border border-amber-200/50 dark:border-amber-800/30 bg-white/90 dark:bg-slate-900/90 p-10 shadow-2xl backdrop-blur-xl">
+        <div className="grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/25">
+          <ShieldCheck className="size-7" />
         </div>
-        <h1 className="mt-5 font-display text-xl font-bold tracking-tight">Rama Admin</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Authorised personnel only.</p>
-        <form onSubmit={submit} className="mt-6 space-y-4">
+        <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Rama Admin</h1>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400" style={{ fontFamily: '"Inter", "Times New Roman", Georgia, serif' }}>Authorised personnel only.</p>
+        <form onSubmit={submit} className="mt-8 space-y-5">
           <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1.5" />
+            <Label htmlFor="email" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email</Label>
+            <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2 h-11 rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-amber-500/40 transition-all" placeholder="admin@rama.com" />
           </div>
           <div>
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1.5" />
+            <Label htmlFor="password" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Password</Label>
+            <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2 h-11 rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-amber-500/40 transition-all" placeholder="••••••••" />
           </div>
-          <Button type="submit" className="w-full" disabled={busy}>
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create admin account"}
+          <Button type="submit" className="w-full h-12 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold shadow-lg shadow-amber-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/30 hover:-translate-y-0.5" disabled={busy}>
+            {busy ? "Please wait…" : mode === "signin" ? "Sign In" : "Create Admin Account"}
           </Button>
         </form>
         <button
           type="button"
-          className="mt-4 w-full text-xs text-muted-foreground hover:text-foreground"
+          className="mt-6 w-full text-xs text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-300"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
         >
           {mode === "signin" ? "First-time setup? Create the admin account" : "Already have an account? Sign in"}
@@ -384,54 +387,78 @@ function Dashboard({ email, userId }) {
   const published = posts?.filter((p) => p.published).length ?? 0
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-amber-50/20 to-slate-100 dark:from-[#0f1117] dark:via-[#131620] dark:to-[#0f1117]" style={{ fontFamily: '"Inter", "Times New Roman", Georgia, serif' }}>
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col hidden lg:flex`}>        <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg">
+      <aside className={`${sidebarOpen ? 'w-72' : 'w-[5.5rem]'} transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] bg-white/80 dark:bg-[#141721]/90 backdrop-blur-2xl border-r border-slate-200/60 dark:border-white/[0.06] flex flex-col hidden lg:flex shadow-xl shadow-slate-200/20 dark:shadow-black/20`}>
+        {/* Sidebar Header */}
+        <div className="p-5 border-b border-slate-200/60 dark:border-white/[0.06]">
+          <div className="flex items-center gap-3.5">
+            <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white shadow-lg shadow-amber-500/30 transition-transform duration-300 hover:scale-105">
               <ShieldCheck className="size-5" />
             </div>
             {sidebarOpen && (
-              <div>
-                <p className="font-display text-sm font-bold leading-tight text-slate-900 dark:text-white">Rama Admin</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Console</p>
+              <div className="overflow-hidden">
+                <p className="font-display text-[15px] font-bold leading-tight text-slate-900 dark:text-white tracking-tight">Rama Admin</p>
+                <p className="text-[11px] font-medium text-amber-600/80 dark:text-amber-400/70 uppercase tracking-[0.15em] mt-0.5">Console</p>
               </div>
             )}
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2">
-          <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={MessageCircle} label="Team Chat" active={activeTab === "chat"} onClick={() => setActiveTab("chat")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={Bell} label="Notifications" badge={totalUnreadNotifications} active={activeTab === "notifications"} onClick={() => setActiveTab("notifications")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={MessageSquare} label="Messages" badge={unread} active={activeTab === "messages"} onClick={() => setActiveTab("messages")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={FileText} label="Posts" active={activeTab === "posts"} onClick={() => setActiveTab("posts")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={Users} label="Employees" active={activeTab === "employees"} onClick={() => setActiveTab("employees")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={Coins} label="Salary & Payroll" active={activeTab === "payroll"} onClick={() => setActiveTab("payroll")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={UserCircle} label="Employee Profile" active={activeTab === "employee-profile"} onClick={() => setActiveTab("employee-profile")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={FolderKanban} label="Projects" active={activeTab === "projects"} onClick={() => setActiveTab("projects")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={IdCard} label="ID Cards" active={activeTab === "idcards"} onClick={() => setActiveTab("idcards")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={FileSignature} label="Letters" active={activeTab === "letters"} onClick={() => setActiveTab("letters")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={ClipboardList} label="Plans" active={activeTab === "plans"} onClick={() => setActiveTab("plans")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={StickyNote} label="Notes" active={activeTab === "notes"} onClick={() => setActiveTab("notes")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={Users} label="Admins" active={activeTab === "admins"} onClick={() => setActiveTab("admins")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={Settings} label="Settings" active={activeTab === "settings"} onClick={() => setActiveTab("settings")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={TrendingUp} label="Analytics" active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")} sidebarOpen={sidebarOpen} />
-          <NavItem icon={FileText} label="Reports" active={activeTab === "reports"} onClick={() => setActiveTab("reports")} sidebarOpen={sidebarOpen} />
+        {/* Sidebar Navigation */}
+        <nav className="flex-1 p-3.5 space-y-1 overflow-y-auto scrollbar-thin">
+          <SidebarSection title="Overview" sidebarOpen={sidebarOpen}>
+            <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={TrendingUp} label="Analytics" active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={FileText} label="Reports" active={activeTab === "reports"} onClick={() => setActiveTab("reports")} sidebarOpen={sidebarOpen} />
+          </SidebarSection>
+
+          <SidebarSection title="Communication" sidebarOpen={sidebarOpen}>
+            <NavItem icon={MessageCircle} label="Team Chat" active={activeTab === "chat"} onClick={() => setActiveTab("chat")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={Bell} label="Notifications" badge={totalUnreadNotifications} active={activeTab === "notifications"} onClick={() => setActiveTab("notifications")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={MessageSquare} label="Messages" badge={unread} active={activeTab === "messages"} onClick={() => setActiveTab("messages")} sidebarOpen={sidebarOpen} />
+          </SidebarSection>
+
+          <SidebarSection title="Content" sidebarOpen={sidebarOpen}>
+            <NavItem icon={FileText} label="Posts" active={activeTab === "posts"} onClick={() => setActiveTab("posts")} sidebarOpen={sidebarOpen} />
+          </SidebarSection>
+
+          <SidebarSection title="Human Resources" sidebarOpen={sidebarOpen}>
+            <NavItem icon={Users} label="Employees" active={activeTab === "employees"} onClick={() => setActiveTab("employees")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={Coins} label="Salary & Payroll" active={activeTab === "payroll"} onClick={() => setActiveTab("payroll")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={UserCircle} label="Employee Profile" active={activeTab === "employee-profile"} onClick={() => setActiveTab("employee-profile")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={IdCard} label="ID Cards" active={activeTab === "idcards"} onClick={() => setActiveTab("idcards")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={FileSignature} label="Letters" active={activeTab === "letters"} onClick={() => setActiveTab("letters")} sidebarOpen={sidebarOpen} />
+          </SidebarSection>
+
+          <SidebarSection title="Workspace" sidebarOpen={sidebarOpen}>
+            <NavItem icon={FolderKanban} label="Projects" active={activeTab === "projects"} onClick={() => setActiveTab("projects")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={ClipboardList} label="Plans" active={activeTab === "plans"} onClick={() => setActiveTab("plans")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={StickyNote} label="Notes" active={activeTab === "notes"} onClick={() => setActiveTab("notes")} sidebarOpen={sidebarOpen} />
+          </SidebarSection>
+
+          <SidebarSection title="Administration" sidebarOpen={sidebarOpen}>
+            <NavItem icon={Users} label="Admins" active={activeTab === "admins"} onClick={() => setActiveTab("admins")} sidebarOpen={sidebarOpen} />
+            <NavItem icon={Settings} label="Settings" active={activeTab === "settings"} onClick={() => setActiveTab("settings")} sidebarOpen={sidebarOpen} />
+          </SidebarSection>
         </nav>
 
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+        {/* Sidebar Footer - User */}
+        <div className="p-4 border-t border-slate-200/60 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]">
           <div className="flex items-center gap-3">
-            <Avatar className="size-10 bg-gradient-to-br from-blue-500 to-indigo-500">
-              <AvatarFallback className="text-white font-semibold">{email?.slice(0, 2).toUpperCase()}</AvatarFallback>
+            <Avatar className="size-10 ring-2 ring-amber-500/20 ring-offset-2 ring-offset-white dark:ring-offset-[#141721]">
+              <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white font-bold text-sm">{email?.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{email}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Administrator</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{email}</p>
+                <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <span className="size-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                  Administrator
+                </p>
               </div>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={signOut}>
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200" onClick={signOut} title="Sign out">
               <LogOut className="size-4" />
             </Button>
           </div>
@@ -440,45 +467,49 @@ function Dashboard({ email, userId }) {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-4">
+        {/* Top Header - Premium Glass Effect */}
+        <header className="header-glass bg-white/70 dark:bg-[#141721]/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-white/[0.06] px-5 sm:px-8 py-4 sticky top-0 z-30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)} className="hidden lg:flex">
+              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)} className="hidden lg:flex h-10 w-10 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all">
                 <Menu className="size-5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden">
+              <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden h-10 w-10 rounded-xl">
                 <Menu className="size-5" />
               </Button>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">Welcome back, Administrator</p>
+                <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight capitalize">
+                  {activeTab === "employee-profile" ? "Employee Profile" : activeTab.replace("-", " ")}
+                </h1>
+                <p className="text-[13px] text-slate-500 dark:text-slate-400 hidden sm:block mt-0.5" style={{ fontFamily: '"Inter", "Times New Roman", Georgia, serif' }}>
+                  {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={toggleTheme}
                 title={isDark ? "Switch to light mode" : "Switch to dark mode"}
                 aria-label="Toggle dark mode"
-                className="hidden sm:flex"
+                className="hidden sm:flex h-10 w-10 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all duration-300"
               >
-                {isDark ? <Sun className="size-5 text-amber-400" /> : <Moon className="size-5 text-slate-700" />}
+                {isDark ? <Sun className="size-5 text-amber-400" /> : <Moon className="size-5 text-slate-600" />}
               </Button>
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="icon" 
-                className="relative cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="relative h-10 w-10 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all duration-300"
                 onClick={() => setNotificationsOpen(true)}
                 title="View Notifications"
               >
                 <Bell className="size-5" />
                 {totalUnreadNotifications > 0 && (
-                  <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold animate-pulse">{totalUnreadNotifications}</span>
+                  <span className="absolute -top-0.5 -right-0.5 size-5 bg-gradient-to-r from-red-500 to-rose-500 rounded-full text-white text-[10px] flex items-center justify-center font-bold shadow-lg shadow-red-500/30 animate-pulse">{totalUnreadNotifications}</span>
                 )}
               </Button>
-              <span className="hidden sm:inline-flex items-center gap-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 text-xs font-medium">
+              <span className="hidden sm:inline-flex items-center gap-2 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/50 dark:border-emerald-800/30 text-emerald-700 dark:text-emerald-400 px-3.5 py-2 text-xs font-semibold">
                 <span className="size-2 bg-emerald-500 rounded-full animate-pulse" />
                 Online
               </span>
@@ -487,9 +518,9 @@ function Dashboard({ email, userId }) {
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-auto p-4 sm:p-6">
-          {/* Stats Grid */}
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6 sm:mb-8">
+        <div className="flex-1 overflow-auto p-5 sm:p-8">
+          {/* Stats Grid - Premium Cards */}
+          <div className="grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             <ModernStatCard 
               icon={Inbox} 
               label="Total Messages" 
@@ -502,7 +533,7 @@ function Dashboard({ email, userId }) {
               label="Unread" 
               value={unread} 
               trend={unread > 0 ? "New" : "All caught up"} 
-              color="red"
+              color="amber"
               accent
             />
             <ModernStatCard 
@@ -510,63 +541,63 @@ function Dashboard({ email, userId }) {
               label="Published Posts" 
               value={published} 
               trend="+5%" 
-              color="green"
+              color="emerald"
             />
             <ModernStatCard 
               icon={Users} 
               label="Active Admins"
               value="3"
               trend="Stable"
-              color="indigo"
+              color="violet"
             />
           </div>
 
-          {/* Tabs */}
+          {/* Tabs - Redesigned */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex-wrap overflow-x-auto">
-              <TabsTrigger value="chat" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+            <TabsList className="bg-white/80 dark:bg-[#1a1d2e]/80 backdrop-blur-xl p-1.5 rounded-2xl flex-wrap overflow-x-auto border border-slate-200/60 dark:border-white/[0.06] shadow-lg shadow-slate-200/10 dark:shadow-black/20">
+              <TabsTrigger value="chat" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <MessageCircle className="mr-2 size-4" /> Team Chat
               </TabsTrigger>
-              <TabsTrigger value="notifications" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="notifications" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <Bell className="mr-2 size-4" /> Notifications {totalUnreadNotifications > 0 && `(${totalUnreadNotifications})`}
               </TabsTrigger>
-              <TabsTrigger value="messages" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="messages" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <MessageSquare className="mr-2 size-4" /> Messages
               </TabsTrigger>
-              <TabsTrigger value="posts" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="posts" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <FileText className="mr-2 size-4" /> Posts
               </TabsTrigger>
-              <TabsTrigger value="employees" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="employees" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <Users className="mr-2 size-4" /> Employees
               </TabsTrigger>
-              <TabsTrigger value="payroll" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="payroll" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <Coins className="mr-2 size-4" /> Salary & Payroll
               </TabsTrigger>
-              <TabsTrigger value="employee-profile" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="employee-profile" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <UserCircle className="mr-2 size-4" /> Profile
               </TabsTrigger>
-              <TabsTrigger value="projects" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="projects" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <FolderKanban className="mr-2 size-4" /> Projects
               </TabsTrigger>
-              <TabsTrigger value="idcards" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="idcards" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <IdCard className="mr-2 size-4" /> ID Cards
               </TabsTrigger>
-              <TabsTrigger value="letters" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="letters" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <FileSignature className="mr-2 size-4" /> Letters
               </TabsTrigger>
-              <TabsTrigger value="plans" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="plans" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <ClipboardList className="mr-2 size-4" /> Plans
               </TabsTrigger>
-              <TabsTrigger value="notes" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="notes" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <StickyNote className="mr-2 size-4" /> Notes
               </TabsTrigger>
-              <TabsTrigger value="admins" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="admins" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <Users className="mr-2 size-4" /> Admins
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="analytics" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <TrendingUp className="mr-2 size-4" /> Analytics
               </TabsTrigger>
-              <TabsTrigger value="reports" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm whitespace-nowrap">
+              <TabsTrigger value="reports" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 whitespace-nowrap transition-all duration-300 font-medium text-[13px] px-4 py-2.5">
                 <FileText className="mr-2 size-4" /> Reports
               </TabsTrigger>
             </TabsList>
@@ -597,30 +628,74 @@ function Dashboard({ email, userId }) {
             <TabsContent value="plans" className="space-y-4"><Plan /></TabsContent>
             <TabsContent value="notes" className="space-y-4"><Notes /></TabsContent>
             <TabsContent value="admins" className="space-y-4"><Admins currentUserId={userId} /></TabsContent>
-            <TabsContent value="dashboard" className="space-y-4">
-              <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Dashboard Overview</h2>
-                <p className="text-slate-500 dark:text-slate-400">Welcome to the Rama Admin Console. Use the navigation to manage your content.</p>
+            <TabsContent value="dashboard" className="space-y-6">
+              <div className="bg-white/80 dark:bg-[#1a1d2e]/80 backdrop-blur-xl rounded-2xl p-8 shadow-lg shadow-slate-200/10 dark:shadow-black/10 border border-slate-200/60 dark:border-white/[0.06]">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20">
+                    <Sparkles className="size-6" />
+                  </div>
+                  <div>
+                    <h2 className="font-display text-xl font-bold text-slate-900 dark:text-white tracking-tight">Welcome Back!</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Here's what's happening in your admin console today.</p>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-3 gap-4 mt-6">
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100/50 dark:border-blue-800/20">
+                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-400 font-display">{messages?.length ?? 0}</p>
+                    <p className="text-sm text-blue-600/70 dark:text-blue-400/60 mt-1">Total Messages</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100/50 dark:border-emerald-800/20">
+                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 font-display">{published}</p>
+                    <p className="text-sm text-emerald-600/70 dark:text-emerald-400/60 mt-1">Published Posts</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-100/50 dark:border-amber-800/20">
+                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-400 font-display">{adminTasks.filter(t => t.status !== "done").length}</p>
+                    <p className="text-sm text-amber-600/70 dark:text-amber-400/60 mt-1">Active Tasks</p>
+                  </div>
+                </div>
               </div>
             </TabsContent>
-            <TabsContent value="settings" className="space-y-4">
-              <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Security</h2>
-                  <Button size="sm" variant="outline" onClick={() => setChangePasswordOpen(true)}>
+            <TabsContent value="settings" className="space-y-6">
+              <div className="bg-white/80 dark:bg-[#1a1d2e]/80 backdrop-blur-xl rounded-2xl p-8 shadow-lg shadow-slate-200/10 dark:shadow-black/10 border border-slate-200/60 dark:border-white/[0.06]">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 dark:from-slate-600 dark:to-slate-800 text-white">
+                      <Key className="size-5" />
+                    </div>
+                    <div>
+                      <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white">Security Settings</h2>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Manage your account security</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => setChangePasswordOpen(true)} className="rounded-xl h-10 px-4 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-all">
                     <Key className="mr-2 size-4" /> Change Password
                   </Button>
                 </div>
                 <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      <span className="font-medium">Email:</span> {email}
-                    </p>
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.04]">
+                    <Mail className="size-5 text-slate-400" />
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Email Address</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white mt-0.5">{email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      <span className="font-medium">Role:</span> Administrator
-                    </p>
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.04]">
+                    <ShieldCheck className="size-5 text-emerald-500" />
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Role</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white mt-0.5">Administrator</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.04]">
+                    <Sun className="size-5 text-amber-500" />
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Theme</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white mt-0.5">{isDark ? "Dark Mode" : "Light Mode"}</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={toggleTheme} className="rounded-xl h-9">
+                      {isDark ? <Sun className="mr-2 size-4 text-amber-400" /> : <Moon className="mr-2 size-4" />}
+                      {isDark ? "Light" : "Dark"}
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -652,26 +727,26 @@ function Dashboard({ email, userId }) {
         userType="admin"
       />
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Overlay - Premium Design */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
-          <div className="absolute right-0 top-0 bottom-0 w-72 bg-white dark:bg-slate-900 shadow-xl">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
+          <div className="absolute right-0 top-0 bottom-0 w-80 bg-white/95 dark:bg-[#141721]/95 backdrop-blur-2xl shadow-2xl shadow-black/20 border-l border-slate-200/30 dark:border-white/[0.06]">
+            <div className="p-5 border-b border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg">
+                <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg">
                   <ShieldCheck className="size-5" />
                 </div>
                 <div>
                   <p className="font-display text-sm font-bold leading-tight text-slate-900 dark:text-white">Rama Admin</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Console</p>
+                  <p className="text-[11px] font-medium text-amber-600/70 dark:text-amber-400/60 uppercase tracking-[0.12em]">Console</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)} className="h-9 w-9 rounded-xl">
                 <X className="size-5" />
               </Button>
             </div>
-            <nav className="p-4 space-y-2">
+            <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-160px)]">
               <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === "dashboard"} onClick={() => { setActiveTab("dashboard"); setMobileMenuOpen(false); }} sidebarOpen={true} />
               <NavItem icon={MessageCircle} label="Team Chat" active={activeTab === "chat"} onClick={() => { setActiveTab("chat"); setMobileMenuOpen(false); }} sidebarOpen={true} />
               <NavItem icon={Bell} label="Notifications" badge={totalUnreadNotifications} active={activeTab === "notifications"} onClick={() => { setActiveTab("notifications"); setMobileMenuOpen(false); }} sidebarOpen={true} />
@@ -690,16 +765,16 @@ function Dashboard({ email, userId }) {
               <NavItem icon={TrendingUp} label="Analytics" active={activeTab === "analytics"} onClick={() => { setActiveTab("analytics"); setMobileMenuOpen(false); }} sidebarOpen={true} />
               <NavItem icon={FileText} label="Reports" active={activeTab === "reports"} onClick={() => { setActiveTab("reports"); setMobileMenuOpen(false); }} sidebarOpen={true} />
             </nav>
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200/60 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02]">
               <div className="flex items-center gap-3">
-                <Avatar className="size-10 bg-gradient-to-br from-blue-500 to-indigo-500">
-                  <AvatarFallback className="text-white font-semibold">{email?.slice(0, 2).toUpperCase()}</AvatarFallback>
+                <Avatar className="size-10 ring-2 ring-amber-500/20">
+                  <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white font-bold text-sm">{email?.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{email}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Administrator</p>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={signOut}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-400 hover:text-red-500" onClick={signOut}>
                   <LogOut className="size-4" />
                 </Button>
               </div>
@@ -768,6 +843,23 @@ function Dashboard({ email, userId }) {
           </form>
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+function SidebarSection({ title, sidebarOpen, children }) {
+  return (
+    <div className="py-2 first:pt-0">
+      {sidebarOpen ? (
+        <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400/80 dark:text-slate-500">
+          {title}
+        </p>
+      ) : (
+        <div className="my-2 border-t border-slate-200/60 dark:border-white/[0.06]" />
+      )}
+      <div className="space-y-1">
+        {children}
+      </div>
     </div>
   )
 }

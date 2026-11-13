@@ -204,7 +204,7 @@ export function Footer() {
             { icon: Phone, label: "Phone", value: "941063306" },
             { icon: Globe, label: "Website", value: "www.ramaitsolution.com" },
           ].map((c) => (
-            <div key={c.label} className="flex items-start gap-3">
+            <div key={`${c.label}-${c.value}`} className="flex items-start gap-3">
               <c.icon className="mt-0.5 size-4 shrink-0 text-accent" />
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40">{c.label}</p>

@@ -19,7 +19,7 @@ import Notes from "@/routes/Notes"
 import NotificationCenter from "@/components/notifications/NotificationCenter"
 import ChatApp from "@/components/chat/ChatApp"
 import { useTheme } from "@/hooks/useTheme"
-import { formatCurrency, MONTHS, generatePayslipPDF } from "@/lib/payrollUtils"
+import { formatCurrency, MONTHS, generatePayslipPDF, generateOvertimePDF, generateCommissionPDF } from "@/lib/payrollUtils"
 
 export default function EmployeeDashboard() {
   const [session, setSession] = useState(null)
@@ -1062,11 +1062,22 @@ function Dashboard({ employee, email, userId, session }) {
                             </span>
                             <p className="text-[11px] text-slate-400">{ot.date} • {ot.hours} hours ({ot.multiplier}x)</p>
                           </div>
-                          <div className="text-right">
-                            <span className="font-mono font-bold text-blue-600">
-                              {formatCurrency(ot.calculated_amount)}
-                            </span>
-                            <Badge className="ml-2 text-[10px] capitalize" variant="outline">{ot.status}</Badge>
+                          <div className="flex items-center gap-2">
+                            <div className="text-right">
+                              <span className="font-mono font-bold text-blue-600">
+                                {formatCurrency(ot.calculated_amount)}
+                              </span>
+                              <Badge className="ml-2 text-[10px] capitalize" variant="outline">{ot.status}</Badge>
+                            </div>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="size-7 text-slate-500 hover:text-blue-600"
+                              title="Download Official Overtime Voucher"
+                              onClick={() => generateOvertimePDF({ overtime: ot, employee, companySettings: null })}
+                            >
+                              <Download className="size-3.5" />
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -1093,11 +1104,22 @@ function Dashboard({ employee, email, userId, session }) {
                             <span className="font-medium text-slate-800 dark:text-slate-200">{c.title}</span>
                             <p className="text-[11px] text-slate-400">{c.earned_date}</p>
                           </div>
-                          <div className="text-right">
-                            <span className="font-mono font-bold text-emerald-600">
-                              {formatCurrency(c.commission_amount)}
-                            </span>
-                            <Badge className="ml-2 text-[10px] capitalize" variant="outline">{c.status}</Badge>
+                          <div className="flex items-center gap-2">
+                            <div className="text-right">
+                              <span className="font-mono font-bold text-emerald-600">
+                                {formatCurrency(c.commission_amount)}
+                              </span>
+                              <Badge className="ml-2 text-[10px] capitalize" variant="outline">{c.status}</Badge>
+                            </div>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="size-7 text-slate-500 hover:text-emerald-600"
+                              title="Download Official Commission Voucher"
+                              onClick={() => generateCommissionPDF({ commission: c, employee, companySettings: null })}
+                            >
+                              <Download className="size-3.5" />
+                            </Button>
                           </div>
                         </div>
                       ))}
